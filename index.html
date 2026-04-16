@@ -584,7 +584,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: clamp(32px,5vw,60px);
     padding: clamp(10px,1.5vh,16px) clamp(14px,2vw,28px) clamp(14px,2.5vh,24px);
     background: linear-gradient(to top, rgba(5,5,8,0.85) 0%, transparent 100%);
   }
@@ -593,6 +592,19 @@
   .left-control-panel {
     position: absolute;
     left: clamp(20px,4vw,52px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px,2vh,20px);
+    z-index: 24;
+  }
+
+  /* ── RIGHT CONTROL PANEL (vertical stack) ── */
+  .right-control-panel {
+    position: absolute;
+    right: clamp(20px,4vw,52px);
     top: 50%;
     transform: translateY(-50%);
     display: flex;
@@ -702,6 +714,36 @@
     background: rgba(255,71,87,0.25);
     border-color: var(--red);
     box-shadow: 0 0 16px rgba(255,71,87,0.3);
+  }
+
+  /* End button in vertical control panel */
+  .right-control-panel .end-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px,1vh,10px);
+    padding: 0;
+    width: clamp(38px,5vw,52px);
+    height: clamp(38px,5vw,52px);
+    border: 1.5px solid rgba(255,71,87,0.8);
+    background: rgba(255,71,87,0.12);
+    border-radius: 50%;
+    font-size: clamp(16px,2vw,22px);
+    font-family: var(--font-display);
+    letter-spacing: 0;
+  }
+  .right-control-panel .end-btn-icon {
+    font-size: clamp(16px,2vw,22px);
+    color: #ff6b78;
+  }
+  .right-control-panel .end-btn-label {
+    font-family: var(--font-display);
+    font-size: clamp(8px,0.9vw,11px);
+    letter-spacing: 0.1em;
+    color: #ff6b78;
+    text-transform: uppercase;
+    font-weight: 600;
   }
 
   /* ══════════════════════════════
@@ -1995,19 +2037,28 @@
         </button>
       </div>
 
-      <div id="navArrowNext" onclick="simulateGesture('next')"
-        style="position:absolute;right:clamp(170px,19vw,244px);top:50%;transform:translateY(-50%);
-               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
-               display:flex;align-items:center;justify-content:center;
-               cursor:pointer;z-index:25;
-               background:rgba(5,5,8,0.7);
-               border:1.5px solid rgba(0,229,200,0.5);
-               backdrop-filter:blur(8px);
-               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
-                    animation:arrow-pulse-r 2s ease-in-out infinite;
-                    text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
-        <div id="nextExLabel" style="display:none;"></div>
+      <!-- Right Control Panel: Navigation Arrow + End Session -->
+      <div class="right-control-panel">
+        <!-- Navigation arrow — center of vertical stack -->
+        <div id="navArrowNext" onclick="simulateGesture('next')"
+          style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+                 display:flex;align-items:center;justify-content:center;
+                 cursor:pointer;z-index:25;
+                 background:rgba(5,5,8,0.7);
+                 border:1.5px solid rgba(0,229,200,0.5);
+                 backdrop-filter:blur(8px);
+                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
+          <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                      animation:arrow-pulse-r 2s ease-in-out infinite;
+                      text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
+          <div id="nextExLabel" style="display:none;"></div>
+        </div>
+
+        <!-- End Session Button -->
+        <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()">
+          <div class="end-btn-icon">⏹</div>
+          <div class="end-btn-label">END</div>
+        </button>
       </div>
     </div>
 
@@ -2058,8 +2109,6 @@
       </div>
       <div class="progress-label" id="progressLabel">EXERCISE 1 OF 2</div>
     </div>
-
-    <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()">END SESSION</button>
 
   </div>
 
