@@ -1,0 +1,3118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CORE — Smart Training Mirror</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050508;
+    --surface: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.08);
+    --cyan: #00e5c8;
+    --cyan-dim: rgba(0,229,200,0.15);
+    --cyan-glow: rgba(0,229,200,0.4);
+    --white: #f0f0f0;
+    --muted: #ffffff;
+    --red: #ff4757;
+    --gold: #ffd32a;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-ui: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--font-ui);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    cursor: none;
+  }
+
+  /* scanline removed */
+
+  /* ── VIGNETTE ── */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.2) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* ══════════════════════════════
+     SCREEN SYSTEM
+  ══════════════════════════════ */
+  .screen {
+    position: absolute; inset: 0;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .screen.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ══════════════════════════════
+     WELCOME SCREEN
+  ══════════════════════════════ */
+  #welcome {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: var(--bg);
+  }
+
+  .welcome-logo {
+    font-family: var(--font-display);
+    font-size: clamp(140px, 28vmin, 380px);
+    letter-spacing: 0.12em;
+    color: var(--white);
+    line-height: 1;
+    position: relative;
+  }
+  .welcome-logo {
+    margin-bottom: 6px;
+  }
+  .welcome-logo span {
+    color: var(--cyan);
+    text-shadow: 0 0 40px var(--cyan-glow), 0 0 80px rgba(0,229,200,0.2);
+  }
+
+  .welcome-tagline {
+    font-family: var(--font-mono);
+    font-size: clamp(5px, 0.85vw, 11px);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ffffff;
+    margin-top: 4px;
+    margin-bottom: 3px;
+    width: clamp(100px, 20vmin, 280px);
+    white-space: nowrap;
+    text-align: center;
+  }
+  .welcome-tagline:last-of-type {
+    margin-bottom: 40px;
+  }
+
+  /* Wave animation figure */
+  .wave-prompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .wave-icon-wrap {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .wave-rings {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+  }
+  .wave-rings::before,
+  .wave-rings::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid var(--cyan);
+    animation: ring-out 2s ease-out infinite;
+  }
+  .wave-rings::before { inset: -10px; animation-delay: 0s; }
+  .wave-rings::after  { inset: -25px; animation-delay: 0.5s; }
+
+  @keyframes ring-out {
+    0%   { opacity: 0.6; transform: scale(0.8); }
+    100% { opacity: 0;   transform: scale(1.5); }
+  }
+
+  .wave-hand {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 52px;
+    animation: wave-hand 1.8s ease-in-out infinite;
+    transform-origin: bottom center;
+  }
+  @keyframes wave-hand {
+    0%,100% { transform: rotate(-10deg) translateY(0); }
+    25%      { transform: rotate(15deg) translateY(-4px); }
+    50%      { transform: rotate(-5deg) translateY(0); }
+    75%      { transform: rotate(12deg) translateY(-2px); }
+  }
+
+  .wave-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.25em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    animation: pulse-text 2s ease-in-out infinite;
+  }
+  @keyframes pulse-text {
+    0%,100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+  }
+
+  .gesture-hint-bar {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    padding: 14px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    backdrop-filter: blur(8px);
+  }
+  .gesture-hint-bar .hint-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .gesture-hint-bar .hint-item .icon {
+    font-size: 18px;
+    opacity: 0.7;
+  }
+
+  /* ══════════════════════════════
+     WORKOUT SCREEN
+  ══════════════════════════════ */
+  #workout {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    padding: 0;
+    display: block;
+  }
+
+  /* ── TOP BAR — HUD overlay ── */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(10px,2vh,20px) clamp(14px,2vw,28px) clamp(8px,1.5vh,16px);
+    background: linear-gradient(to bottom, rgba(5,5,8,0.85) 0%, transparent 100%);
+  }
+
+  .top-logo {
+    font-family: var(--font-display);
+    font-size: clamp(18px,2.5vw,28px);
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+  .top-logo span { color: var(--cyan); }
+
+  .session-stats {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+  }
+  .stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: clamp(13px,1.6vw,18px);
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1.1;
+  }
+  .stat-value.accent { color: var(--cyan); }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* VIDEO AREA — full screen */
+  .video-container {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    overflow: hidden;
+  }
+
+  #mainVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  @media (max-aspect-ratio: 3/4) {
+    #mainVideo { object-fit: cover; }
+    .video-bg  { object-fit: cover; }
+  }
+  /* override for style below */
+  #mainVideo {
+    position: relative;
+    z-index: 1;
+    display: block;
+    background: #000;
+  }
+
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px) brightness(0.2) saturate(0.4);
+    transform: scale(1.12);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Corner accents */
+  .corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0.6;
+  }
+  .corner.tl { top: 12px; left: 12px;  border-width: 2px 0 0 2px; }
+  .corner.tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+  .corner.bl { bottom: 12px; left: 12px;  border-width: 0 0 2px 2px; }
+  .corner.br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+  /* Paused overlay */
+  .pause-overlay {
+    position: absolute; inset: 0;
+    background: rgba(5,5,8,0.7);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .pause-overlay.visible { opacity: 1; }
+  .pause-big {
+    font-size: 72px;
+    opacity: 0.7;
+  }
+
+  /* Active time badge */
+  .active-time-badge {
+    position: absolute;
+    top: clamp(56px,7vh,72px); left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5,5,8,0.85);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 5px 16px;
+    display: flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(4px);
+  }
+  .active-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; } 50% { opacity: 0.3; }
+  }
+  .active-time-text {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--white);
+  }
+
+  /* Swipe gesture arrows */
+  .swipe-hints {
+    position: absolute;
+    bottom: 16px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .swipe-arrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: rgba(5,5,8,0.7);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .swipe-arrow:hover {
+    color: var(--cyan);
+    border-color: var(--cyan-dim);
+  }
+  .swipe-arrow .arrow-icon { font-size: 14px; }
+
+  /* ── SIDE PANEL ── */
+  .side-panel {
+    position: absolute;
+    top: clamp(60px,8vh,80px);
+    right: 0;
+    width: clamp(160px,18vw,220px);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px,0.8vh,10px);
+    padding: clamp(8px,1vw,12px);
+  }
+
+  .panel-card {
+    background: rgba(5,5,8,0.72);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 3px;
+    padding: clamp(8px,1vh,12px) clamp(8px,1vw,14px);
+    backdrop-filter: blur(12px);
+  }
+
+  .panel-card-title {
+    font-family: var(--font-mono);
+    font-size: clamp(6px,0.7vw,8px);
+    letter-spacing: 0.25em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* Exercise name */
+  .exercise-name {
+    font-family: var(--font-display);
+    font-size: clamp(16px,2.2vw,28px);
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: var(--white);
+  }
+  .exercise-sub {
+    font-family: var(--font-mono);
+    font-size: clamp(7px,0.8vw,9px);
+    letter-spacing: 0.12em;
+    color: #ffffff;
+    margin-top: 4px;
+  }
+
+  /* Exercise index dots */
+  .exercise-dots {
+    display: flex; gap: 8px; margin-top: 14px;
+    align-items: center;
+  }
+  .ex-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .ex-dot.active {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan-glow);
+    width: 20px;
+    border-radius: 3px;
+  }
+  .ex-dot.done {
+    background: rgba(0,229,200,0.3);
+  }
+
+  /* REP COUNTER */
+  .rep-ring-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .rep-ring {
+    position: relative;
+    width: clamp(60px,7vw,80px); height: clamp(60px,7vw,80px);
+  }
+  .rep-ring svg {
+    transform: rotate(-90deg);
+    width: clamp(60px,7vw,80px); height: clamp(60px,7vw,80px);
+  }
+  .rep-ring svg circle.track {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 3;
+  }
+  .rep-ring svg circle.fill {
+    fill: none;
+    stroke: var(--cyan);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1);
+    filter: drop-shadow(0 0 4px var(--cyan-glow));
+  }
+  .rep-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0;
+  }
+  .rep-number {
+    font-family: var(--font-display);
+    font-size: clamp(18px,2.2vw,28px);
+    letter-spacing: 0.02em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .rep-total {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+  }
+  .rep-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+
+  /* Rep +/- buttons */
+  .rep-controls {
+    display: flex; gap: 10px; align-items: center; margin-top: 8px;
+  }
+  .rep-btn {
+    width: 36px; height: 36px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--white);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-family: var(--font-ui);
+  }
+  .rep-btn:hover {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: var(--cyan-dim);
+  }
+  .rep-btn.pulse {
+    animation: rep-pulse 0.3s ease-out;
+  }
+  @keyframes rep-pulse {
+    0%   { transform: scale(0.9); }
+    50%  { transform: scale(1.1); background: var(--cyan-dim); }
+    100% { transform: scale(1); }
+  }
+
+  /* Rep complete flash */
+  .rep-complete-flash {
+    position: absolute; inset: 0;
+    background: rgba(0,229,200,0.08);
+    border: 2px solid var(--cyan);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .rep-complete-flash.show { opacity: 1; }
+
+  /* GESTURE GUIDE */
+  .gesture-guide {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .gesture-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 10px;
+    border-radius: 2px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+  }
+  .gesture-row:hover {
+    background: var(--cyan-dim);
+    border-color: rgba(0,229,200,0.2);
+  }
+  .gesture-icon-box {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .gesture-desc {
+    flex: 1;
+  }
+  .gesture-action {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--white);
+  }
+  .gesture-detail {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #ffffff;
+  }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: clamp(10px,1.5vh,16px) clamp(14px,2vw,28px) clamp(14px,2.5vh,24px);
+    background: linear-gradient(to top, rgba(5,5,8,0.85) 0%, transparent 100%);
+  }
+
+  .play-pause-btn {
+    display: flex; align-items: center; gap: 14px;
+    background: transparent; border: none; cursor: pointer;
+    padding: 0;
+  }
+  .pp-circle {
+    width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
+    border-radius: 50%;
+    border: 1.5px solid var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(16px,2vw,22px);
+    color: var(--cyan);
+    transition: all 0.2s;
+    background: var(--cyan-dim);
+    box-shadow: 0 0 20px rgba(0,229,200,0.15);
+  }
+  .play-pause-btn:hover .pp-circle {
+    background: rgba(0,229,200,0.25);
+    box-shadow: 0 0 30px rgba(0,229,200,0.3);
+    transform: scale(1.05);
+  }
+  .pp-label {
+    font-family: var(--font-display);
+    font-size: clamp(12px,1.5vw,18px);
+    letter-spacing: 0.1em;
+    color: var(--white);
+  }
+
+  .speed-btn {
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; cursor: pointer;
+    padding: 0;
+  }
+  .speed-display {
+    width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
+    border-radius: 50%;
+    border: 1.5px solid var(--cyan);
+    display: flex; align-items: center; justify-content: center;
+    font-size: clamp(12px,1.5vw,16px);
+    color: var(--cyan);
+    transition: all 0.2s;
+    background: var(--cyan-dim);
+    box-shadow: 0 0 20px rgba(0,229,200,0.15);
+    font-family: var(--font-display);
+    letter-spacing: 0.05em;
+  }
+  .speed-btn:hover .speed-display {
+    background: rgba(0,229,200,0.25);
+    box-shadow: 0 0 30px rgba(0,229,200,0.3);
+    transform: scale(1.05);
+  }
+
+  .session-progress {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .progress-track {
+    width: clamp(100px,15vw,200px); height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan-glow);
+    transition: width 0.5s ease;
+    border-radius: 1px;
+  }
+  .progress-label {
+    font-family: var(--font-mono);
+    font-size: clamp(7px,0.8vw,9px);
+    letter-spacing: 0.25em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .end-btn {
+    background: rgba(255,71,87,0.12);
+    border: 1.5px solid rgba(255,71,87,0.8);
+    color: #ff6b78;
+    font-family: var(--font-mono);
+    font-size: clamp(9px,1vw,11px);
+    letter-spacing: 0.2em;
+    padding: clamp(8px,1.2vh,12px) clamp(12px,1.5vw,22px);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    border-radius: 2px;
+    font-weight: 600;
+  }
+  .end-btn:hover {
+    background: rgba(255,71,87,0.25);
+    border-color: var(--red);
+    box-shadow: 0 0 16px rgba(255,71,87,0.3);
+  }
+
+  /* ══════════════════════════════
+     GESTURE FEEDBACK OVERLAY
+  ══════════════════════════════ */
+  .gesture-feedback {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    z-index: 500;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .gesture-feedback.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .gesture-feedback.hide {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.3);
+    transition: all 0.4s ease;
+  }
+  .gf-icon {
+    font-size: 64px;
+    filter: drop-shadow(0 0 20px var(--cyan-glow));
+  }
+  .gf-label {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    text-shadow: 0 0 20px var(--cyan-glow);
+  }
+
+  /* ══════════════════════════════
+     LOCK / COOLDOWN INDICATOR
+  ══════════════════════════════ */
+  .gesture-lock-indicator {
+    position: fixed;
+    top: 24px; right: 36px;
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255,215,42,0.1);
+    border: 1px solid rgba(255,215,42,0.3);
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: all 0.3s;
+    z-index: 400;
+  }
+  .gesture-lock-indicator.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .lock-timer-bar {
+    width: 60px; height: 2px;
+    background: rgba(255,215,42,0.2);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+  .lock-timer-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 1px;
+    transition: width linear;
+  }
+
+  /* ══════════════════════════════
+     COMPLETE SCREEN
+  ══════════════════════════════ */
+  #complete {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: radial-gradient(ellipse at 50% 50%, rgba(0,229,200,0.06) 0%, transparent 70%);
+  }
+
+  .complete-header {
+    font-family: var(--font-display);
+    font-size: clamp(60px, 10vw, 140px);
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-align: center;
+    color: var(--white);
+  }
+  .complete-header span { color: var(--cyan); text-shadow: 0 0 60px var(--cyan-glow); }
+
+  .complete-stats {
+    display: flex; gap: 40px; margin-top: 40px; margin-bottom: 48px;
+  }
+  .c-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 20px 32px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+  }
+  .c-stat-num {
+    font-family: var(--font-display);
+    font-size: 52px;
+    color: var(--cyan);
+    line-height: 1;
+  }
+  .c-stat-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+
+  .restart-btn {
+    background: transparent;
+    border: 1.5px solid var(--cyan);
+    color: var(--cyan);
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 0.15em;
+    padding: 16px 44px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .restart-btn:hover {
+    background: var(--cyan-dim);
+    box-shadow: 0 0 30px rgba(0,229,200,0.2);
+  }
+
+  /* ══════════════════════════════
+     CUSTOM CURSOR
+  ══════════════════════════════ */
+
+
+  /* ══════════════════════════════
+     REP COMPLETE TOAST
+  ══════════════════════════════ */
+  .rep-toast {
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 600;
+    font-family: var(--font-display);
+    font-size: 80px;
+    letter-spacing: 0.1em;
+    color: var(--cyan);
+    text-shadow: 0 0 60px var(--cyan-glow), 0 0 120px rgba(0,229,200,0.2);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .rep-toast.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  .rep-toast.hide {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.2) translateY(-20px);
+    transition: all 0.5s ease;
+  }
+
+  /* ══════════════════════════════
+     SET COMPLETE OVERLAY
+  ══════════════════════════════ */
+  .set-complete-overlay {
+    position: fixed; inset: 0;
+    z-index: 800;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0;
+    background: rgba(5,5,8,0.88);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  .set-complete-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .sco-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.4em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease 0.2s;
+  }
+  .set-complete-overlay.visible .sco-eyebrow {
+    opacity: 1; transform: translateY(0);
+  }
+  .sco-title {
+    font-family: var(--font-display);
+    font-size: clamp(60px, 9vw, 120px);
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--white);
+    text-align: center;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) 0.35s;
+  }
+  .set-complete-overlay.visible .sco-title {
+    opacity: 1; transform: translateY(0);
+  }
+  .sco-title span { color: var(--cyan); text-shadow: 0 0 60px var(--cyan-glow); }
+  .sco-subtitle {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    margin-top: 14px;
+    margin-bottom: 48px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.4s ease 0.5s;
+  }
+  .set-complete-overlay.visible .sco-subtitle {
+    opacity: 1; transform: translateY(0);
+  }
+  .sco-stats {
+    display: flex; gap: 32px; margin-bottom: 48px;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.4s ease 0.6s;
+  }
+  .set-complete-overlay.visible .sco-stats {
+    opacity: 1; transform: translateY(0);
+  }
+  .sco-stat {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 16px 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+  }
+  .sco-stat-num {
+    font-family: var(--font-display);
+    font-size: 40px;
+    color: var(--cyan);
+    line-height: 1;
+  }
+  .sco-stat-label {
+    font-family: var(--font-mono);
+    font-size: clamp(7px,0.8vw,9px);
+    letter-spacing: 0.25em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .sco-actions {
+    display: flex; gap: 16px;
+    opacity: 0; transform: translateY(10px);
+    transition: all 0.4s ease 0.75s;
+  }
+  .set-complete-overlay.visible .sco-actions {
+    opacity: 1; transform: translateY(0);
+  }
+  .sco-btn {
+    font-family: var(--font-display);
+    font-size: clamp(14px,2vmin,18px);
+    letter-spacing: 0.12em;
+    padding: clamp(12px,2vh,16px) clamp(24px,4vw,40px);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1.5px solid;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: clamp(180px,20vw,240px);
+  }
+  .sco-btn-text {
+    position: relative;
+    z-index: 2;
+    transition: color 0.2s;
+  }
+  /* Dwell fill bar — sweeps left to right as user hovers */
+  .sco-dwell-fill {
+    position: absolute;
+    inset: 0;
+    width: 0%;
+    background: rgba(0,229,200,0.35);
+    z-index: 1;
+    transition: none;
+  }
+  .sco-btn.primary {
+    background: var(--cyan-dim);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 16px rgba(0,229,200,0.1);
+  }
+  .sco-btn.primary:hover {
+    background: rgba(0,229,200,0.2);
+    box-shadow: 0 0 30px rgba(0,229,200,0.3);
+  }
+  .sco-btn.secondary {
+    background: rgba(255,255,255,0.05);
+    border-color: rgba(255,255,255,0.4);
+    color: #ffffff;
+  }
+  .sco-btn.secondary:hover {
+    border-color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+  }
+  /* Active dwell state — bright border + scale */
+  .hover-dwell-active.sco-btn.primary {
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 0 2px var(--cyan), 0 0 32px rgba(0,229,200,0.5) !important;
+    transform: scale(1.03) !important;
+  }
+  .hover-dwell-active.sco-btn.secondary {
+    border-color: #ffffff !important;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.8), 0 0 24px rgba(255,255,255,0.2) !important;
+    transform: scale(1.03) !important;
+  }
+  /* Rep counter glow when synced */
+  .rep-ring svg circle.fill.synced {
+    stroke: var(--cyan);
+    filter: drop-shadow(0 0 8px var(--cyan-glow)) drop-shadow(0 0 16px rgba(0,229,200,0.3));
+  }
+  .rep-number.bump {
+    animation: rep-bump 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  @keyframes rep-bump {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.4); color: var(--cyan); }
+    100% { transform: scale(1); }
+  }
+
+
+  /* ══════════════════════════════
+     HOVER BUTTON DWELL RING
+  ══════════════════════════════ */
+  .hover-btn-ring {
+    position: fixed;
+    pointer-events: none;
+    z-index: 600;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .hover-btn-ring.visible { opacity: 1; }
+
+  /* Highlight glow on hovered button */
+  .hover-dwell-active {
+    box-shadow: 0 0 0 2px var(--cyan), 0 0 20px var(--cyan-glow) !important;
+    transition: box-shadow 0.15s !important;
+  }
+
+  .hover-dwell-active.end-btn {
+    box-shadow: 0 0 0 2px var(--red), 0 0 20px rgba(255,71,87,0.3) !important;
+  }
+
+
+  /* ══════════════════════════════
+     NEXT EXERCISE PREVIEW
+  ══════════════════════════════ */
+  .next-ex-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .next-ex-card:hover {
+    border-color: var(--cyan-dim);
+    background: rgba(0,229,200,0.05);
+  }
+  .next-ex-card-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .next-ex-name {
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .next-ex-sub {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #ffffff;
+    margin-top: 3px;
+  }
+  .next-ex-arrow {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--cyan);
+    opacity: 0.6;
+    transition: all 0.2s;
+  }
+  .next-ex-card:hover .next-ex-arrow { opacity: 1; transform: translateX(3px); }
+  /* Dwell fill bar at bottom of card */
+  .next-ex-dwell-bar {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--cyan);
+    width: 0%;
+    transition: none;
+    box-shadow: 0 0 6px var(--cyan-glow);
+  }
+  /* Hidden when on last exercise */
+  .next-ex-hidden { opacity: 0; pointer-events: none; }
+
+
+  @keyframes arrow-pulse-l {
+    0%,100% { opacity:0.5; transform:translateX(0); }
+    50%      { opacity:1;   transform:translateX(-6px); }
+  }
+  @keyframes arrow-pulse-r {
+    0%,100% { opacity:0.5; transform:translateX(0); }
+    50%      { opacity:1;   transform:translateX(6px); }
+  }
+  #navArrowPrev:hover, #navArrowPrev.hover-dwell-active {
+    background: rgba(0,229,200,0.2) !important;
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 28px rgba(0,229,200,0.4) !important;
+  }
+  #navArrowNext:hover, #navArrowNext.hover-dwell-active {
+    background: rgba(0,229,200,0.2) !important;
+    border-color: var(--cyan) !important;
+    box-shadow: 0 0 28px rgba(0,229,200,0.4) !important;
+  }
+
+
+  /* ══════════════════════════════
+     BODY GROUP SELECTOR SCREEN
+  ══════════════════════════════ */
+  #groupSelect {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(0,229,200,0.04) 0%, transparent 70%);
+  }
+  .gs-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 6vmin, 56px);
+    letter-spacing: 0.1em;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .gs-subtitle {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-bottom: 52px;
+  }
+  .gs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: min(640px, min(88vw, 88vh));
+  }
+  .gs-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 32px 28px;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+  .gs-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--cyan-dim);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .gs-card:hover::before,
+  .gs-card.hover-dwell-active::before { opacity: 1; }
+  .gs-card:hover,
+  .gs-card.hover-dwell-active {
+    border-color: rgba(0,229,200,0.4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,229,200,0.1);
+  }
+  .gs-card-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+  .gs-card-name {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 0.08em;
+    color: var(--white);
+    line-height: 1;
+  }
+  .gs-card-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    text-transform: uppercase;
+  }
+  .gs-card-dwell {
+    position: absolute;
+    bottom: 0; left: 0;
+    height: 2px;
+    background: var(--cyan);
+    width: 0%;
+    box-shadow: 0 0 6px var(--cyan-glow);
+  }
+
+  /* ── EXERCISE PICKER SCREEN ── */
+  #exercisePick {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    background: radial-gradient(ellipse at 50% 40%, rgba(0,229,200,0.03) 0%, transparent 70%);
+  }
+  .ep-back {
+    position: absolute;
+    top: 28px; left: 32px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
+  .ep-back:hover, .ep-back.hover-dwell-active {
+    color: var(--cyan);
+    border-color: var(--cyan-dim);
+  }
+  .ep-group-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .ep-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 48px);
+    letter-spacing: 0.08em;
+    color: var(--white);
+    margin-bottom: 40px;
+  }
+  .ep-carousel {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 36px;
+  }
+  .ep-arrow {
+    font-size: 32px;
+    color: var(--cyan);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ep-arrow:hover, .ep-arrow.hover-dwell-active {
+    opacity: 1;
+    border-color: var(--cyan-dim);
+    background: var(--cyan-dim);
+  }
+  .ep-card {
+    width: min(380px, 70vw);
+    background: var(--cyan-dim);
+    border: 1.5px solid var(--cyan);
+    border-radius: 2px;
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 0 24px rgba(0,229,200,0.1);
+  }
+  .ep-card:hover, .ep-card.hover-dwell-active {
+    background: rgba(0,229,200,0.2);
+    box-shadow: 0 0 40px rgba(0,229,200,0.25);
+    transform: scale(1.01);
+  }
+  .ep-card-name {
+    font-family: var(--font-display);
+    font-size: 52px;
+    letter-spacing: 0.05em;
+    color: var(--cyan);
+    line-height: 1;
+    text-shadow: 0 0 30px var(--cyan-glow);
+  }
+  .ep-card-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: #ffffff;
+  }
+  .ep-cues {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .ep-cue {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #ffffff;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .ep-cue::before {
+    content: '—';
+    color: var(--cyan);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  .ep-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+  .ep-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+  .ep-dot.active {
+    background: var(--cyan);
+    box-shadow: 0 0 8px var(--cyan-glow);
+    width: 20px;
+    border-radius: 3px;
+  }
+
+  .ep-hint {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: #ffffff;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+
+  /* ══════════════════════════════
+     PORTRAIT / TALL SCREEN ADAPTIVE
+     Full-body mirror layout
+  ══════════════════════════════ */
+  @media (max-aspect-ratio: 3/4) {
+    /* Side panel moves to bottom overlay strip */
+    .side-panel {
+      top: auto !important;
+      bottom: 100px;
+      right: 0;
+      left: 0;
+      width: 100% !important;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-around;
+      padding: 8px 16px !important;
+      gap: 8px !important;
+      background: rgba(5,5,8,0.8);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .side-panel .panel-card {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px !important;
+    }
+    .rep-ring-wrap {
+      flex-direction: row !important;
+      align-items: center;
+      gap: 10px !important;
+    }
+    .exercise-name {
+      font-size: clamp(14px,4vw,22px) !important;
+    }
+    .rep-ring {
+      width: clamp(44px,8vw,56px) !important;
+      height: clamp(44px,8vw,56px) !important;
+    }
+    .rep-ring svg {
+      width: clamp(44px,8vw,56px) !important;
+      height: clamp(44px,8vw,56px) !important;
+    }
+    .rep-number {
+      font-size: clamp(16px,4vw,22px) !important;
+    }
+    /* Bottom bar moves up above the side panel strip */
+    .bottom-bar {
+      bottom: calc(100px + clamp(60px,10vh,80px)) !important;
+      background: transparent !important;
+    }
+    /* Nav arrows stay centred vertically in video */
+    #navArrowPrev {
+      left: clamp(10px,2vw,20px) !important;
+      width: clamp(44px,8vw,56px) !important;
+      height: clamp(44px,8vw,56px) !important;
+    }
+    #navArrowNext {
+      right: clamp(10px,2vw,20px) !important;
+      width: clamp(44px,8vw,56px) !important;
+      height: clamp(44px,8vw,56px) !important;
+    }
+    /* Welcome screen larger tap target */
+    #btnStartSession {
+      font-size: clamp(20px,5vw,32px) !important;
+      padding: clamp(16px,3vh,24px) clamp(32px,8vw,56px) !important;
+    }
+    /* Group select cards — single column on portrait */
+    .gs-grid {
+      grid-template-columns: 1fr 1fr !important;
+      width: min(90vw, 500px) !important;
+    }
+    .gs-card-name {
+      font-size: clamp(20px,5vw,28px) !important;
+    }
+    /* Exercise picker card wider */
+    .ep-card {
+      width: min(80vw, 380px) !important;
+    }
+    .ep-card-name {
+      font-size: clamp(36px,8vw,52px) !important;
+    }
+  }
+
+  @media (max-aspect-ratio: 1/2) {
+    /* Very tall mirrors (9:20 etc) — single column group cards */
+    .gs-grid {
+      grid-template-columns: 1fr !important;
+      width: min(80vw, 340px) !important;
+    }
+  }
+
+
+  /* ── LOCKED GROUP CARDS ── */
+  .gs-card-locked {
+    opacity: 0.38;
+    pointer-events: none;
+    cursor: default;
+    position: relative;
+  }
+  .gs-card-locked::before { display: none; }
+  .gs-card-locked:hover   { transform: none; box-shadow: none; border-color: var(--border); }
+  .gs-lock-badge {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 18px;
+    opacity: 0.9;
+  }
+  .gs-card-locked .gs-card-name  { color: var(--muted); }
+  .gs-card-locked .gs-card-count { color: var(--muted); font-style: italic; }
+
+</style>
+  <script type="module">
+    import { GestureRecognizer, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
+    window._mpLoaded = false;
+    window._gestureRecognizer = null;
+
+    async function loadMediaPipe() {
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
+      );
+      window._gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task",
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO",
+        numHands: 1,
+        minHandDetectionConfidence: 0.6,
+        minHandPresenceConfidence: 0.6,
+        minTrackingConfidence: 0.5
+      });
+      window._mpLoaded = true;
+      console.log("MediaPipe loaded");
+      // signal to main script
+      document.dispatchEvent(new Event('mediapipe-ready'));
+    }
+    loadMediaPipe();
+  </script>
+</head>
+<body>
+
+<!-- ════════════ WELCOME SCREEN ════════════ -->
+<div class="screen active" id="welcome">
+  <div class="welcome-logo">C<span>O</span>RE</div>
+
+  <button id="btnStartSession" data-hover="goToGroupSelect"
+    onclick="goToGroupSelect()"
+    style="margin-top:0px;background:transparent;border:1.5px solid var(--cyan);
+           color:var(--cyan);font-family:var(--font-display);font-size:22px;
+           letter-spacing:0.15em;padding:18px 56px;cursor:pointer;
+           border-radius:2px;transition:all 0.2s;position:relative;z-index:20;">
+    BEGIN SESSION
+  </button>
+  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;
+              color:#ffffff;margin-top:32px;text-transform:uppercase;
+              position:relative;z-index:20;">Hover your hand over the button to start</div>
+</div>
+
+<!-- ════════════ BODY GROUP SELECT ════════════ -->
+<div class="screen" id="groupSelect">
+  <div class="gs-title">CHOOSE YOUR FOCUS</div>
+  <div class="gs-subtitle">Select a workout to begin</div>
+  <div class="gs-grid">
+
+    <!-- ACTIVE -->
+    <div class="gs-card" id="gsCard0" onclick="selectGroup('LOWER BODY')">
+      <div class="gs-card-icon">🦵</div>
+      <div class="gs-card-name">LOWER BODY</div>
+      <div class="gs-card-count">2 exercises</div>
+      <div class="gs-card-dwell" id="gsDwell0"></div>
+    </div>
+
+    <!-- LOCKED -->
+    <div class="gs-card gs-card-locked">
+      <div class="gs-card-icon">💪</div>
+      <div class="gs-card-name">UPPER BODY</div>
+      <div class="gs-card-count">Coming soon</div>
+      <div class="gs-lock-badge">🔒</div>
+    </div>
+
+    <div class="gs-card gs-card-locked">
+      <div class="gs-card-icon">🔥</div>
+      <div class="gs-card-name">CORE</div>
+      <div class="gs-card-count">Coming soon</div>
+      <div class="gs-lock-badge">🔒</div>
+    </div>
+
+    <div class="gs-card gs-card-locked">
+      <div class="gs-card-icon">⚡</div>
+      <div class="gs-card-name">FULL BODY</div>
+      <div class="gs-card-count">Coming soon</div>
+      <div class="gs-lock-badge">🔒</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════ EXERCISE PICKER ════════════ -->
+<div class="screen" id="exercisePick">
+  <button class="ep-back" id="btnBackToGroups" onclick="goToGroupSelect()">← Back</button>
+  <div class="ep-group-label" id="epGroupLabel">LOWER BODY</div>
+  <div class="ep-title">PICK AN EXERCISE</div>
+  <div class="ep-carousel">
+    <button class="ep-arrow" id="btnEpPrev" onclick="epNav(-1)">&#8592;</button>
+    <div class="ep-card" id="btnStartWorkout" onclick="startWorkoutFromPicker()">
+      <div class="ep-card-name" id="epCardName">SQUAT</div>
+      <div class="ep-card-sub" id="epCardSub">Lower Body · Compound</div>
+      <div class="ep-cues" id="epCues"></div>
+      <div style="margin-top:16px;font-family:var(--font-mono);font-size:9px;
+                  letter-spacing:0.25em;color:var(--cyan);text-transform:uppercase;
+                  opacity:0.7;">Hover to start →</div>
+    </div>
+    <button class="ep-arrow" id="btnEpNext" onclick="epNav(1)">&#8594;</button>
+  </div>
+  <div class="ep-dots" id="epDots"></div>
+  <div class="ep-hint">Hover over the card · hold 0.8s to begin</div>
+
+</div>
+
+<!-- ════════════ WORKOUT SCREEN ════════════ -->
+<div class="screen" id="workout">
+
+  <!-- Hover-only mode: no gesture feedback overlay needed -->
+
+  <!-- Rep complete flash -->
+  <div class="rep-complete-flash" id="repFlash"></div>
+
+  <!-- Rep complete toast -->
+  <div class="rep-toast" id="repToast">SET DONE!</div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar">
+    <div class="top-logo">C<span>O</span>RE</div>
+    <div class="session-stats">
+      <div class="stat-block">
+        <div class="stat-label">Active Time</div>
+        <div class="stat-value accent" id="activeTime">00:00</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Sets Done</div>
+        <div class="stat-value" id="setsDone">0</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">Exercise</div>
+        <div class="stat-value" id="exerciseIndex">1 / 2</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT: video fills entire screen -->
+  <div class="main-content">
+    <div class="video-container" id="videoContainer">
+      <video class="video-bg" id="videoBg" loop playsinline muted src="squat.mp4"></video>
+      <video id="mainVideo" loop playsinline src="squat.mp4"></video>
+
+      <div class="corner tl"></div>
+      <div class="corner tr"></div>
+      <div class="corner bl"></div>
+      <div class="corner br"></div>
+
+      <!-- Active time badge -->
+      <div class="active-time-badge">
+        <div class="active-dot" id="activeDot"></div>
+        <div class="active-time-text">ACTIVE · <span id="activeTimeBadge">00:00</span></div>
+      </div>
+
+      <!-- Pause overlay -->
+      <div class="pause-overlay" id="pauseOverlay">
+        <div class="pause-big">⏸</div>
+      </div>
+
+      <!-- Navigation arrow overlays — large, clear, always visible -->
+      <div id="navArrowPrev" onclick="simulateGesture('prev')"
+        style="position:absolute;left:clamp(20px,4vw,52px);top:50%;transform:translateY(-50%);
+               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+               display:flex;align-items:center;justify-content:center;
+               cursor:pointer;z-index:25;
+               background:rgba(5,5,8,0.7);
+               border:1.5px solid rgba(0,229,200,0.5);
+               backdrop-filter:blur(8px);
+               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
+        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                    animation:arrow-pulse-l 2s ease-in-out infinite;
+                    text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
+        <div id="prevExLabel" style="display:none;"></div>
+      </div>
+
+      <div id="navArrowNext" onclick="simulateGesture('next')"
+        style="position:absolute;right:clamp(170px,19vw,244px);top:50%;transform:translateY(-50%);
+               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+               display:flex;align-items:center;justify-content:center;
+               cursor:pointer;z-index:25;
+               background:rgba(5,5,8,0.7);
+               border:1.5px solid rgba(0,229,200,0.5);
+               backdrop-filter:blur(8px);
+               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
+        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                    animation:arrow-pulse-r 2s ease-in-out infinite;
+                    text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
+        <div id="nextExLabel" style="display:none;"></div>
+      </div>
+    </div>
+
+
+  </div>
+
+    <!-- Side Panel -->
+    <div class="side-panel">
+
+      <!-- Exercise Info -->
+      <div class="panel-card">
+        <div class="panel-card-title">Current Exercise</div>
+        <div class="exercise-name" id="exerciseName">SQUAT</div>
+        <div class="exercise-sub" id="exerciseSub">Lower Body · Compound</div>
+        <div class="exercise-dots" id="exerciseDots"></div>
+      </div>
+
+      <!-- Rep Counter -->
+      <div class="panel-card">
+        <div class="panel-card-title">Rep Counter <span id="syncBadge" style="color:var(--cyan);font-size:8px;letter-spacing:0.2em;margin-left:8px;opacity:0;transition:opacity 0.3s;">● AUTO SYNC</span></div>
+        <div class="rep-ring-wrap">
+          <div class="rep-ring">
+            <svg viewBox="0 0 80 80">
+              <circle class="track" cx="40" cy="40" r="35"/>
+              <circle class="fill" id="repArc" cx="40" cy="40" r="35"/>
+            </svg>
+            <div class="rep-center">
+              <div class="rep-number" id="repCount">0</div>
+              <div class="rep-total">/ 10</div>
+            </div>
+          </div>
+          <div class="rep-label">REPS COMPLETED</div>
+        </div>
+      </div>
+
+
+
+
+
+    </div>
+
+  <!-- BOTTOM BAR (absolute overlay) -->
+  <div class="bottom-bar">
+
+    <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()">
+      <div class="pp-circle" id="ppCircle">▶</div>
+      <div class="pp-label" id="ppLabel">PLAY</div>
+    </button>
+
+    <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()">
+      <div class="speed-display" id="speedDisplay">1x</div>
+    </button>
+
+    <div class="session-progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+      <div class="progress-label" id="progressLabel">EXERCISE 1 OF 2</div>
+    </div>
+
+    <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()">END SESSION</button>
+
+  </div>
+
+</div>
+
+<!-- ════════════ COMPLETE SCREEN ════════════ -->
+<div class="screen" id="complete">
+  <div class="complete-header">SESSION<br><span>COMPLETE</span></div>
+  <div style="font-family:var(--font-mono);font-size:12px;letter-spacing:0.25em;
+              color:#ffffff;text-transform:uppercase;margin-top:8px;">
+    Great work — every rep counts.
+  </div>
+  <div class="complete-stats">
+    <div class="c-stat">
+      <div class="c-stat-num" id="cTotalReps">0</div>
+      <div class="c-stat-label">Total Reps</div>
+    </div>
+    <div class="c-stat">
+      <div class="c-stat-num" id="cTime">00:00</div>
+      <div class="c-stat-label">Active Time</div>
+    </div>
+    <div class="c-stat">
+      <div class="c-stat-num" id="cSets">0</div>
+      <div class="c-stat-label">Sets Completed</div>
+    </div>
+  </div>
+  <button class="restart-btn" id="btnRestart" data-hover="restartSession"
+    onclick="restartSession()">START AGAIN</button>
+  <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.2em;
+              color:#ffffff;margin-top:14px;text-transform:uppercase;">
+    Hover over the button to restart
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+// DATA
+// ══════════════════════════════════
+// ── Exercise library organised by body group ──
+const exerciseLibrary = {
+  'LOWER BODY': [
+    {
+      name: 'SQUAT',
+      sub: 'Lower Body · Compound',
+      video: 'squat.mp4',
+      repTimestamps: [5.47, 10.94],
+      repWindow: 0.5,
+      videoDuration: 13.083,
+      cues: ['Feet shoulder-width apart', 'Drive knees out', 'Chest up']
+    },
+    {
+      name: 'LUNGE',
+      sub: 'Lower Body · Unilateral',
+      video: 'lunges.mp4',
+      repTimestamps: [12.63], // 1 rep per loop — both legs = 12.63s cycle
+      repWindow: 0.5,
+      videoDuration: 13.083,
+      cues: ['Step forward, knee over ankle', 'Torso upright', 'Push through heel']
+    }
+  ],
+  'UPPER BODY': [
+    {
+      name: 'PUSH-UP',
+      sub: 'Upper Body · Compound',
+      video: 'pushup.mp4',
+      repTimestamps: null,
+      videoDuration: null,
+      cues: ['Hands slightly wider than shoulders', 'Body in straight line', 'Elbows at 45°']
+    }
+  ],
+  'CORE': [
+    {
+      name: 'PLANK',
+      sub: 'Core · Isometric',
+      video: 'plank.mp4',
+      repTimestamps: null,
+      videoDuration: null,
+      cues: ['Neutral spine', 'Engage your core', 'Breathe steadily']
+    }
+  ],
+  'FULL BODY': [
+    {
+      name: 'BURPEE',
+      sub: 'Full Body · Cardio',
+      video: 'burpee.mp4',
+      repTimestamps: null,
+      videoDuration: null,
+      cues: ['Controlled descent', 'Explosive jump', 'Land soft']
+    }
+  ]
+};
+
+// Active session exercise list (set when user picks a group)
+let exercises = exerciseLibrary['LOWER BODY'];
+let selectedGroup = null;
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+let state = {
+  currentScreen: 'welcome',
+  currentExercise: 0,
+  reps: 0,
+  isPlaying: false,
+  sessionStarted: false,
+  activeSeconds: 0,
+  setsDone: 0,
+  totalReps: 0,
+  gestureLocked: false,
+  lockTimeout: null,
+  timerInterval: null,
+  activeInterval: null
+};
+
+const MAX_REPS = 10;
+const LOCK_DURATION = 3000; // 3s gesture cooldown
+
+// ══════════════════════════════════
+// SCREEN MANAGEMENT
+// ══════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.currentScreen = id;
+  // Show hover zones only during workout
+  const hzCanvas = document.getElementById('hoverZoneCanvas');
+  if (hzCanvas) hzCanvas.style.opacity = (id === 'workout' && gestureEngine.running) ? '1' : '0';
+}
+
+// ══════════════════════════════════
+// SESSION
+// ══════════════════════════════════
+function startSession() {
+  // Goes to group selection — actual workout start is in startWorkoutFromPicker()
+  goToGroupSelect();
+}
+
+function startActiveTimer() {
+  if (state.activeInterval) clearInterval(state.activeInterval);
+  state.activeInterval = setInterval(() => {
+    if (state.isPlaying) {
+      state.activeSeconds++;
+      updateTimerDisplays();
+    }
+  }, 1000);
+}
+
+function updateTimerDisplays() {
+  const m = String(Math.floor(state.activeSeconds / 60)).padStart(2, '0');
+  const s = String(state.activeSeconds % 60).padStart(2, '0');
+  const t = `${m}:${s}`;
+  document.getElementById('activeTime').textContent = t;
+  document.getElementById('activeTimeBadge').textContent = t;
+}
+
+function endSession() {
+  if (state.activeInterval) clearInterval(state.activeInterval);
+  const video = document.getElementById('mainVideo');
+  video.pause();
+  state.isPlaying = false;
+
+  const m = String(Math.floor(state.activeSeconds / 60)).padStart(2, '0');
+  const s = String(state.activeSeconds % 60).padStart(2, '0');
+  document.getElementById('cTime').textContent = `${m}:${s}`;
+  document.getElementById('cTotalReps').textContent = state.totalReps;
+  document.getElementById('cSets').textContent = state.setsDone;
+  showScreen('complete');
+}
+
+function restartSession() {
+  goToGroupSelect();
+}
+
+// ══════════════════════════════════
+// EXERCISE
+// ══════════════════════════════════
+function loadExercise(index) {
+  const ex = exercises[index];
+  document.getElementById('exerciseName').textContent = ex.name;
+  document.getElementById('exerciseSub').textContent = ex.sub;
+  document.getElementById('exerciseIndex').textContent = `${index + 1} / ${exercises.length}`;
+  document.getElementById('progressLabel').textContent = `EXERCISE ${index + 1} OF ${exercises.length}`;
+  document.getElementById('progressFill').style.width = `${((index + 1) / exercises.length) * 100}%`;
+
+  // Update dots
+  const dotsEl = document.getElementById('exerciseDots');
+  if (dotsEl) {
+    dotsEl.innerHTML = exercises.map((_, i) => {
+      let cls = 'ex-dot';
+      if (i < index) cls += ' done';
+      if (i === index) cls += ' active';
+      return `<div class="${cls}" onclick="goToExercise(${i})"></div>`;
+    }).join('');
+  }
+
+  // Show sync badge if this exercise has auto sync
+  const syncBadge = document.getElementById('syncBadge');
+  if (syncBadge) syncBadge.style.opacity = ex.repTimestamps ? '1' : '0';
+
+  // Update nav arrow exercise labels
+  const prevIdx = (index - 1 + exercises.length) % exercises.length;
+  const nextIdx = (index + 1) % exercises.length;
+  const prevLabel = document.getElementById('prevExLabel');
+  const nextLabel = document.getElementById('nextExLabel');
+  if (prevLabel) prevLabel.textContent = exercises.length > 1 ? exercises[prevIdx].name : '';
+  if (nextLabel) nextLabel.textContent = exercises.length > 1 ? exercises[nextIdx].name : '';
+
+
+
+  // Video — swap src and wait for canplay before playing
+  const video = document.getElementById('mainVideo');
+  const videoBg = document.getElementById('videoBg');
+
+  video.src = ex.video;
+  videoBg.src = ex.video;
+
+  // Always play bg blur layer
+  videoBg.load();
+  videoBg.addEventListener('canplay', () => videoBg.play().catch(() => {}), { once: true });
+
+  // Play main video once loaded — use canplay event so src swap completes first
+  if (state.isPlaying) {
+    video.load();
+    video.addEventListener('canplay', () => {
+      video.play().then(() => {
+        document.getElementById('ppCircle').textContent = '⏸';
+        document.getElementById('ppLabel').textContent = 'PAUSE';
+        document.getElementById('pauseOverlay').classList.remove('visible');
+      }).catch(() => {});
+    }, { once: true });
+  } else {
+    video.load();
+  }
+
+  // Reset reps
+  state.reps = 0;
+  updateRepDisplay();
+  updateSetsDoneDisplay();
+}
+
+function goToExercise(index) {
+  if (index === state.currentExercise) return;
+  stopRepSync();
+  state.currentExercise = index;
+  loadExercise(index);
+  setTimeout(() => startRepSync(), 400);
+}
+
+// ══════════════════════════════════
+// SPEED CONTROL
+// ══════════════════════════════════
+const PLAYBACK_SPEEDS = [1, 1.25, 1.5, 1.75, 2];
+let currentSpeedIndex = 0; // 1x speed by default
+
+function nextSpeed() {
+  currentSpeedIndex = (currentSpeedIndex + 1) % PLAYBACK_SPEEDS.length;
+  const video = document.getElementById('mainVideo');
+  const speedDisplay = document.getElementById('speedDisplay');
+  
+  const newSpeed = PLAYBACK_SPEEDS[currentSpeedIndex];
+  video.playbackRate = newSpeed;
+  
+  // Display speed
+  if (newSpeed === 1) {
+    speedDisplay.textContent = '1x';
+  } else if (newSpeed === 1.25) {
+    speedDisplay.textContent = '1.25x';
+  } else if (newSpeed === 1.5) {
+    speedDisplay.textContent = '1.5x';
+  } else if (newSpeed === 1.75) {
+    speedDisplay.textContent = '1.75x';
+  } else if (newSpeed === 2) {
+    speedDisplay.textContent = '2x';
+  }
+}
+
+// ══════════════════════════════════
+// PLAY / PAUSE
+// ══════════════════════════════════
+function togglePlayPause() {
+  const video = document.getElementById('mainVideo');
+  const ppCircle = document.getElementById('ppCircle');
+  const ppLabel = document.getElementById('ppLabel');
+  const pauseOverlay = document.getElementById('pauseOverlay');
+  const activeDot = document.getElementById('activeDot');
+
+  state.isPlaying = !state.isPlaying;
+
+  if (state.isPlaying) {
+    video.play().catch(() => {});
+    ppCircle.textContent = '⏸';
+    ppLabel.textContent = 'PAUSE';
+    pauseOverlay.classList.remove('visible');
+    activeDot.style.animationPlayState = 'running';
+  } else {
+    video.pause();
+    ppCircle.textContent = '▶';
+    ppLabel.textContent = 'PLAY';
+    pauseOverlay.classList.add('visible');
+    activeDot.style.animationPlayState = 'paused';
+  }
+}
+
+// ══════════════════════════════════
+// REP COUNTER
+// ══════════════════════════════════
+function changeRep(delta) {
+  // If current exercise has video sync, disable manual counting
+  const ex = exercises[state.currentExercise];
+  if (ex && ex.repTimestamps) return;
+  const newVal = Math.max(0, Math.min(MAX_REPS, state.reps + delta));
+  if (newVal === state.reps) return;
+
+  const btn = event?.target;
+  if (btn) {
+    btn.classList.remove('pulse');
+    void btn.offsetWidth;
+    btn.classList.add('pulse');
+    setTimeout(() => btn.classList.remove('pulse'), 400);
+  }
+
+  if (delta > 0) state.totalReps++;
+  state.reps = newVal;
+  updateRepDisplay();
+
+  if (state.reps >= MAX_REPS) {
+    triggerSetComplete();
+  }
+}
+
+function resetReps() {
+  state.reps = 0;
+  updateRepDisplay();
+}
+
+function updateRepDisplay() {
+  document.getElementById('repCount').textContent = state.reps;
+  const circumference = 220;
+  const offset = circumference - (state.reps / MAX_REPS) * circumference;
+  document.getElementById('repArc').style.strokeDashoffset = offset;
+}
+
+function updateSetsDoneDisplay() {
+  document.getElementById('setsDone').textContent = state.setsDone;
+}
+
+function triggerSetComplete() {
+  state.setsDone++;
+  updateSetsDoneDisplay();
+
+  const flash = document.getElementById('repFlash');
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 600);
+
+  const toast = document.getElementById('repToast');
+  toast.classList.remove('hide');
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(() => toast.classList.remove('hide'), 500);
+  }, 1800);
+}
+
+// ══════════════════════════════════
+// GESTURE NAV WITH LOCK
+// ══════════════════════════════════
+function simulateGesture(type) {
+  if (type === 'next' || type === 'prev') {
+    if (state.gestureLocked) return;
+    activateGestureLock();
+  }
+
+  if (type === 'next') {
+    const next = (state.currentExercise + 1) % exercises.length;
+    goToExercise(next);
+  } else if (type === 'prev') {
+    const prev = (state.currentExercise - 1 + exercises.length) % exercises.length;
+    goToExercise(prev);
+  } else if (type === 'playpause') {
+    togglePlayPause();
+  } else if (type === 'wave') {
+    startSession();
+  }
+}
+
+function activateGestureLock() {
+  state.gestureLocked = true;
+  if (state.lockTimeout) clearTimeout(state.lockTimeout);
+  state.lockTimeout = setTimeout(() => {
+    state.gestureLocked = false;
+  }, LOCK_DURATION);
+}
+
+function showGestureFeedback(icon, label) {
+  const el = document.getElementById('gestureFeedback');
+  document.getElementById('gfIcon').textContent = icon;
+  document.getElementById('gfLabel').textContent = label;
+  el.classList.remove('hide');
+  el.classList.add('show');
+  setTimeout(() => {
+    el.classList.remove('show');
+    el.classList.add('hide');
+    setTimeout(() => el.classList.remove('hide'), 400);
+  }, 900);
+}
+
+
+// ══════════════════════════════════
+// VIDEO REP SYNC
+// ══════════════════════════════════
+let syncState = {
+  loopCount: 0,
+  triggered: new Set(),   // set of "loopCount * cycleLen + repIndex" already fired
+  lastTime: 0,
+  _handler: null
+};
+
+function startRepSync() {
+  stopRepSync();
+  const ex = exercises[state.currentExercise];
+  if (!ex.repTimestamps) return;
+
+  syncState.loopCount = 0;
+  syncState.triggered = new Set();
+  syncState.lastTime = 0;
+
+  const video = document.getElementById('mainVideo');
+
+  function onTimeUpdate() {
+    if (!state.isPlaying) return;
+    const t = video.currentTime;
+
+    // Detect loop wrap
+    if (t < syncState.lastTime - 1.0) {
+      syncState.loopCount++;
+    }
+    syncState.lastTime = t;
+
+    if (state.reps >= MAX_REPS) return;
+
+    const ts = ex.repTimestamps;
+    const win = ex.repWindow || 0.4;
+
+    for (let i = 0; i < ts.length; i++) {
+      const globalRep = syncState.loopCount * ts.length + i;
+      if (globalRep >= MAX_REPS) break;
+      if (syncState.triggered.has(globalRep)) continue;
+
+      // Fire only inside the window AFTER the timestamp (person is at top of squat)
+      const diff = t - ts[i];
+      if (diff >= 0 && diff <= win) {
+        syncState.triggered.add(globalRep);
+        incrementRepSynced();
+        break; // only one rep per timeupdate poll
+      }
+    }
+  }
+
+  video.addEventListener('timeupdate', onTimeUpdate);
+  syncState._handler = onTimeUpdate;
+}
+
+function stopRepSync() {
+  const video = document.getElementById('mainVideo');
+  if (syncState._handler) {
+    video.removeEventListener('timeupdate', syncState._handler);
+    syncState._handler = null;
+  }
+}
+
+function incrementRepSynced() {
+  if (state.reps >= MAX_REPS) return;
+  state.reps++;
+  state.totalReps++;
+
+  // Animate the rep number
+  const repEl = document.getElementById('repCount');
+  repEl.classList.remove('bump');
+  void repEl.offsetWidth;
+  repEl.classList.add('bump');
+  setTimeout(() => repEl.classList.remove('bump'), 400);
+
+  updateRepDisplay();
+
+  if (state.reps >= MAX_REPS) {
+    triggerSetCompleteOverlay();
+  }
+}
+
+function triggerSetCompleteOverlay() {
+  // Pause video
+  const video = document.getElementById('mainVideo');
+  video.pause();
+  state.isPlaying = false;
+  document.getElementById('ppCircle').textContent = '▶';
+  document.getElementById('ppLabel').textContent = 'PLAY';
+  document.getElementById('pauseOverlay').classList.add('visible');
+
+  state.setsDone++;
+  updateSetsDoneDisplay();
+
+  // Populate overlay
+  const ex = exercises[state.currentExercise];
+  document.getElementById('scoExName').textContent = ex.name + 'S';
+  document.getElementById('scoSets').textContent = state.setsDone;
+  const m = String(Math.floor(state.activeSeconds / 60)).padStart(2,'0');
+  const s = String(state.activeSeconds % 60).padStart(2,'0');
+  document.getElementById('scoTime').textContent = m + ':' + s;
+
+  document.getElementById('setCompleteOverlay').classList.add('visible');
+}
+
+function doAnotherSet() {
+  document.getElementById('setCompleteOverlay').classList.remove('visible');
+  state.reps = 0;
+  syncState.triggered = new Set();
+  syncState.loopCount = 0;
+  syncState.lastTime = 0;
+  updateRepDisplay();
+
+  const video = document.getElementById('mainVideo');
+  const videoBg = document.getElementById('videoBg');
+  video.currentTime = 0;
+  if (videoBg) { videoBg.currentTime = 0; videoBg.play().catch(()=>{}); }
+  video.play().then(() => {
+    state.isPlaying = true;
+    document.getElementById('ppCircle').textContent = '⏸';
+    document.getElementById('ppLabel').textContent = 'PAUSE';
+    document.getElementById('pauseOverlay').classList.remove('visible');
+    startRepSync();
+  }).catch(() => {});
+}
+
+function nextExerciseFromOverlay() {
+  document.getElementById('setCompleteOverlay').classList.remove('visible');
+  const next = (state.currentExercise + 1) % exercises.length;
+  stopRepSync();
+  state.reps = 0;
+  state.isPlaying = true; // ensure loadExercise plays the new video
+  updateRepDisplay();
+  state.currentExercise = next;
+  loadExercise(next);
+  setTimeout(() => startRepSync(), 500);
+}
+
+
+// ══════════════════════════════════════════════════════
+// GESTURE ENGINE  (MediaPipe tasks-vision)
+// ══════════════════════════════════════════════════════
+const gestureEngine = {
+  running: false,
+  webcamStream: null,
+  lastVideoTime: -1,
+  animFrame: null,
+  
+  // Swipe detection state
+  swipe: {
+    active: false,
+    startX: null,
+    startTime: null,
+    triggered: false,
+    lastSwipeTime: 0  // Cooldown tracking
+  }
+};
+
+async function toggleGestureCamera() {
+  if (gestureEngine.running) {
+    stopGestureCamera();
+  } else {
+    await startGestureCamera();
+  }
+}
+
+async function startGestureCamera() {
+  const webcam = document.getElementById('gestureWebcam');
+  const canvas = document.getElementById('gestureCanvas');
+
+  // Wait for MediaPipe if not ready yet
+  if (!window._mpLoaded) {
+    await new Promise(resolve => document.addEventListener('mediapipe-ready', resolve, { once: true }));
+  }
+
+  try {
+    gestureEngine.webcamStream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 640, height: 480, facingMode: 'user' }
+    });
+    webcam.srcObject = gestureEngine.webcamStream;
+    await new Promise(r => webcam.onloadedmetadata = r);
+    webcam.play();
+
+    canvas.width  = webcam.videoWidth  || 640;
+    canvas.height = webcam.videoHeight || 480;
+
+    gestureEngine.running = true;
+    gestureEngine.lastVideoTime = -1;
+
+    // Show hover zone overlay
+    const hzCanvas = document.getElementById('hoverZoneCanvas');
+    resizeHoverCanvas();
+    clearHoverZones();
+    hzCanvas.style.opacity = (state.currentScreen === 'workout') ? '1' : '0';
+
+    predictGestures();
+
+  } catch (err) {
+    console.error('Camera error — hover control unavailable:', err);
+  }
+}
+
+function stopGestureCamera() {
+  gestureEngine.running = false;
+  cancelAnimationFrame(gestureEngine.animFrame);
+  if (gestureEngine.webcamStream) {
+    gestureEngine.webcamStream.getTracks().forEach(t => t.stop());
+    gestureEngine.webcamStream = null;
+  }
+  const hzCanvas = document.getElementById('hoverZoneCanvas');
+  if (hzCanvas) hzCanvas.style.opacity = '0';
+}
+
+function predictGestures() {
+  if (!gestureEngine.running) return;
+
+  const webcam = document.getElementById('gestureWebcam');
+  const canvas = document.getElementById('gestureCanvas');
+  const ctx = canvas.getContext('2d');
+  const gr = window._gestureRecognizer;
+
+  if (webcam.readyState >= 2 && webcam.currentTime !== gestureEngine.lastVideoTime) {
+    gestureEngine.lastVideoTime = webcam.currentTime;
+    const now = performance.now();
+
+    try {
+      const results = gr.recognizeForVideo(webcam, now);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (results.landmarks && results.landmarks.length > 0) {
+        const landmarks = results.landmarks[0];
+        drawHandSkeleton(ctx, landmarks, canvas.width, canvas.height);
+
+        const gestureName = results.gestures[0]?.[0]?.categoryName || 'None';
+        updateGestureStatus(gestureName);
+        handleGesture(gestureName, landmarks);
+        updateHoverZones(landmarks);
+        
+        // Swipe detection using all hand landmarks for better motion tracking
+        detectSwipe(landmarks);
+        
+        // Button hover — use wrist/palm base (landmark 9) only for stable cursor
+        // This is more reliable than index fingertip (landmark 8) when pointing at corners
+        const _cursor = landmarks[9];
+        updateBtnHover(1 - _cursor.x, _cursor.y);
+      } else {
+        // No hand — reset swipe
+        gestureEngine.swipe.active = false;
+        gestureEngine.swipe.startX = null;
+        gestureEngine.swipe.startTime = null;
+        gestureEngine.swipe.triggered = false;
+        updateGestureStatus('—');
+        clearHoverZones();
+        clearBtnHover();
+        const hc2 = document.getElementById('handCursor');
+        const hcr2 = document.getElementById('handCursorRing');
+        if (hc2) hc2.style.opacity = '0';
+        if (hcr2) hcr2.style.opacity = '0';
+      }
+    } catch(e) {
+      // silently ignore frame errors
+    }
+  }
+
+  gestureEngine.animFrame = requestAnimationFrame(predictGestures);
+}
+
+// ── Draw minimal skeleton on preview canvas ──
+function drawHandSkeleton(ctx, landmarks, w, h) {
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],       // thumb
+    [0,5],[5,6],[6,7],[7,8],       // index
+    [0,9],[9,10],[10,11],[11,12],  // middle
+    [0,13],[13,14],[14,15],[15,16],// ring
+    [0,17],[17,18],[18,19],[19,20],// pinky
+    [5,9],[9,13],[13,17]           // palm
+  ];
+  ctx.strokeStyle = 'rgba(0,229,200,0.7)';
+  ctx.lineWidth = 1.5;
+  connections.forEach(([a,b]) => {
+    ctx.beginPath();
+    ctx.moveTo(landmarks[a].x * w, landmarks[a].y * h);
+    ctx.lineTo(landmarks[b].x * w, landmarks[b].y * h);
+    ctx.stroke();
+  });
+  landmarks.forEach(lm => {
+    ctx.beginPath();
+    ctx.arc(lm.x * w, lm.y * h, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,229,200,0.9)';
+    ctx.fill();
+  });
+}
+
+// ── Update status pill ──
+function updateGestureStatus(name) {
+  const el = document.getElementById('gsGesture');
+  const icons = {
+    'Open_Palm': '🖐 Open Palm',
+    'Closed_Fist': '✊ Fist',
+    'Pointing_Up': '☝️ Point Up',
+    'Thumb_Up': '👍 Thumb Up',
+    'Victory': '✌️ Victory',
+    'ILoveYou': '🤟',
+    'Thumb_Down': '👎',
+    'None': '',
+    '—': ''
+  };
+  el.textContent = icons[name] || name;
+}
+
+// Gesture controls removed — hover zones handle all navigation
+function handleGesture(name, landmarks) {
+  // Hover zones handle everything — no gesture actions needed
+}
+
+// ══════════════════════════════════════════════════════
+// SWIPE DETECTION FOR EXERCISE SWITCHING
+// ══════════════════════════════════════════════════════
+const SWIPE_DISTANCE = 300;    // pixels
+const SWIPE_TIME_WINDOW = 450; // ms (0.5 seconds — requires faster swipes)
+const SWIPE_COOLDOWN = 1500;   // ms (1.5 seconds — minimum delay between swipes)
+
+function detectSwipe(allLandmarks) {
+  // Only detect swipes during workouts
+  if (state.currentScreen !== 'workout') {
+    gestureEngine.swipe.active = false;
+    gestureEngine.swipe.startX = null;
+    gestureEngine.swipe.startTime = null;
+    gestureEngine.swipe.triggered = false;
+    return;
+  }
+  
+  if (!allLandmarks || allLandmarks.length === 0) return;
+  
+  // Calculate center point of all hand landmarks for swipe tracking
+  let sumX = 0;
+  for (let i = 0; i < allLandmarks.length; i++) {
+    sumX += allLandmarks[i].x;
+  }
+  const avgX = sumX / allLandmarks.length;
+  
+  const now = Date.now();
+  const screenX = (1 - avgX) * window.innerWidth;
+  
+  // Start swipe
+  if (!gestureEngine.swipe.active) {
+    gestureEngine.swipe.active = true;
+    gestureEngine.swipe.startX = screenX;
+    gestureEngine.swipe.startTime = now;
+    gestureEngine.swipe.triggered = false;
+    return;
+  }
+  
+  // Check time window
+  const elapsedTime = now - gestureEngine.swipe.startTime;
+  if (elapsedTime > SWIPE_TIME_WINDOW) {
+    // Time window exceeded, reset
+    gestureEngine.swipe.active = false;
+    gestureEngine.swipe.startX = null;
+    gestureEngine.swipe.startTime = null;
+    gestureEngine.swipe.triggered = false;
+    return;
+  }
+  
+  // Calculate distance traveled
+  const distance = screenX - gestureEngine.swipe.startX;
+  const absDistance = Math.abs(distance);
+  
+  // Check if swipe threshold met and within time window
+  if (!gestureEngine.swipe.triggered && absDistance >= SWIPE_DISTANCE) {
+    // Check cooldown — prevent rapid successive swipes
+    const timeSinceLastSwipe = now - gestureEngine.swipe.lastSwipeTime;
+    if (timeSinceLastSwipe < SWIPE_COOLDOWN) {
+      return; // Still in cooldown, ignore this swipe
+    }
+    
+    gestureEngine.swipe.triggered = true;
+    gestureEngine.swipe.lastSwipeTime = now; // Record this swipe time
+    
+    // Right swipe = next exercise, Left swipe = previous
+    if (distance > 0) {
+      // Swiped right — go to next exercise
+      const nextIndex = state.currentExercise + 1;
+      if (nextIndex < exercises.length) {
+        goToExercise(nextIndex);
+      }
+    } else {
+      // Swiped left — go to previous exercise
+      const prevIndex = state.currentExercise - 1;
+      if (prevIndex >= 0) {
+        goToExercise(prevIndex);
+      }
+    }
+    
+    // Reset swipe state
+    gestureEngine.swipe.active = false;
+    gestureEngine.swipe.startX = null;
+    gestureEngine.swipe.startTime = null;
+  }
+}
+    gestureEngine.swipe.startTime = null;
+
+
+// Auto-start camera when welcome screen is shown (optional — uncomment if desired)
+document.addEventListener('mediapipe-ready', () => startGestureCamera());
+
+
+// ══════════════════════════════════════════════════════
+// HOVER ZONE ENGINE  (Kinect-style)
+// ══════════════════════════════════════════════════════
+
+const HOVER_DWELL = 800; // ms hand must stay in zone to trigger
+
+const hoverZones = [];
+// Nav arrows are now small circular buttons handled by elementsFromPoint hover system
+
+// Per-zone hover state
+const hoverState = {};
+hoverZones.forEach(z => {
+  hoverState[z.id] = { dwellStart: null, triggered: false, progress: 0 };
+});
+
+function getHandNormalized(landmarks) {
+  // Use wrist/palm base (landmark 9) for stable tracking — not pointer finger
+  // x is mirrored in the webcam preview, so we flip: realX = 1 - lm.x
+  const wrist = landmarks[9];
+  return { x: 1 - wrist.x, y: wrist.y };
+}
+
+function updateHoverZones(landmarks) {
+  const hand = getHandNormalized(landmarks);
+  const now = Date.now();
+  const canvas = document.getElementById('hoverZoneCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  hoverZones.forEach(zone => {
+    const hs = hoverState[zone.id];
+    const inZone = hand.x >= zone.x && hand.x <= zone.x + zone.w &&
+                   hand.y >= zone.y && hand.y <= zone.y + zone.h;
+
+    if (inZone) {
+      if (!hs.dwellStart) hs.dwellStart = now;
+      hs.progress = Math.min(1, (now - hs.dwellStart) / HOVER_DWELL);
+    } else {
+      hs.dwellStart = null;
+      hs.progress = Math.max(0, hs.progress - 0.05);
+      hs.triggered = false;
+    }
+
+    // Draw zone
+    const px = zone.x * W;
+    const py = zone.y * H;
+    const pw = zone.w * W;
+    const ph = zone.h * H;
+    const alpha = 0.08 + hs.progress * 0.25;
+
+    // Zone fill
+    ctx.fillStyle = zone.color + alpha + ')';
+    ctx.beginPath();
+    ctx.roundRect(px + 4, py + 4, pw - 8, ph - 8, 8);
+    ctx.fill();
+
+    // Zone border
+    ctx.strokeStyle = zone.color + (0.2 + hs.progress * 0.6) + ')';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(px + 4, py + 4, pw - 8, ph - 8, 8);
+    ctx.stroke();
+
+    // Progress arc in center of zone
+    if (hs.progress > 0.02) {
+      const cx = px + pw / 2;
+      const cy = py + ph / 2;
+      const r = Math.min(pw, ph) * 0.22;
+
+      // Background circle
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = zone.color + '0.15)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Progress arc
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + hs.progress * Math.PI * 2);
+      ctx.strokeStyle = zone.color + (0.6 + hs.progress * 0.4) + ')';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // Label text
+    ctx.fillStyle = zone.color + (0.4 + hs.progress * 0.5) + ')';
+    ctx.font = `${12 + hs.progress * 4}px "DM Mono", monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(zone.label, px + pw / 2, py + ph - 12);
+
+    // Trigger!
+    if (inZone && hs.progress >= 1 && !hs.triggered) {
+      hs.triggered = true;
+      hs.dwellStart = null;
+      hs.progress = 0;
+      zone.action();
+      // Flash the zone white briefly
+      ctx.fillStyle = zone.color + '0.4)';
+      ctx.beginPath();
+      ctx.roundRect(px + 4, py + 4, pw - 8, ph - 8, 8);
+      ctx.fill();
+    }
+  });
+
+  // Draw hand cursor dot
+  ctx.beginPath();
+  ctx.arc(hand.x * W, hand.y * H, 8, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(0,229,200,0.9)';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(hand.x * W, hand.y * H, 14, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(0,229,200,0.4)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+}
+
+function clearHoverZones() {
+  const canvas = document.getElementById('hoverZoneCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Draw faint zone outlines only (no hand)
+  const W = canvas.width, H = canvas.height;
+  hoverZones.forEach(zone => {
+    hoverState[zone.id].dwellStart = null;
+    hoverState[zone.id].progress = 0;
+    hoverState[zone.id].triggered = false;
+    const px = zone.x * W, py = zone.y * H;
+    const pw = zone.w * W, ph = zone.h * H;
+    ctx.strokeStyle = zone.color + '0.12)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.roundRect(px + 4, py + 4, pw - 8, ph - 8, 8);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = zone.color + '0.07)';
+    ctx.font = '11px "DM Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(zone.label, px + pw / 2, py + ph - 12);
+  });
+}
+
+function resizeHoverCanvas() {
+  const canvas = document.getElementById('hoverZoneCanvas');
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  if (gestureEngine.running) clearHoverZones();
+}
+window.addEventListener('resize', resizeHoverCanvas);
+
+
+// ══════════════════════════════════════════════════════
+// HOVER BUTTON ENGINE
+// Tracks hand position over screen buttons, fills a dwell
+// ring, and fires the button action after BTN_DWELL ms.
+// ══════════════════════════════════════════════════════
+
+const BTN_DWELL = 800; // ms to hold over a button to fire it
+const CIRCUMFERENCE = 213.6; // 2π × r(34)
+
+const btnHoverState = {
+  currentEl: null,       // DOM element currently being hovered
+  dwellStart: null,
+  triggered: false,
+  rafId: null,
+  
+  // Reset animation state
+  resetEl: null,         // Element being reset
+  resetStartTime: null,
+  resetDuration: 300    // ms to slowly reset the bar (300ms)
+};
+
+// List of button IDs and their actions
+const hoverButtons = {
+  btnStartSession:  () => goToGroupSelect(),
+  navArrowPrev:     () => simulateGesture('prev'),
+  navArrowNext:     () => simulateGesture('next'),
+  btnPlayPause:     () => togglePlayPause(),
+  btnSpeed:         () => nextSpeed(),
+  btnEndSession:    () => endSession(),
+  btnAnotherSet:    () => doAnotherSet(),
+  btnNextExercise:  () => nextExerciseFromOverlay(),
+  btnNextExercise2: () => goToExercise((state.currentExercise + 1) % exercises.length),
+  btnRestart:       () => restartSession()
+  // Group cards and picker buttons registered dynamically by registerPickerHoverButtons()
+};
+
+function getButtonAtPoint(nx, ny) {
+  // nx, ny are 0-1 normalized screen coords (already unmirrored)
+  const sx = nx * window.innerWidth;
+  const sy = ny * window.innerHeight;
+
+  // Use elementsFromPoint (plural) so overlaid canvases don't block hit-testing
+  const elements = document.elementsFromPoint(sx, sy);
+  if (!elements || !elements.length) return null;
+
+  for (const el of elements) {
+    let node = el;
+    while (node && node !== document.body) {
+      if (node.id && hoverButtons[node.id]) return node;
+      node = node.parentElement;
+    }
+  }
+  return null;
+}
+
+function updateBtnHover(nx, ny) {
+  const sx = nx * window.innerWidth;
+  const sy = ny * window.innerHeight;
+  const now = Date.now();
+  const ring = document.getElementById('hoverBtnRing');
+  const arc  = document.getElementById('hoverBtnArc');
+
+  // Move the always-visible hand cursor
+  const hc = document.getElementById('handCursor');
+  const hcr = document.getElementById('handCursorRing');
+  if (hc) { hc.style.left = sx+'px'; hc.style.top = sy+'px'; hc.style.opacity = '1'; }
+  if (hcr) { hcr.style.left = sx+'px'; hcr.style.top = sy+'px'; hcr.style.opacity = '1'; }
+
+  const hoveredBtn = getButtonAtPoint(nx, ny);
+
+  // Changed target — reset
+  if (hoveredBtn !== btnHoverState.currentEl) {
+    // Remove highlight from old
+    if (btnHoverState.currentEl) {
+      btnHoverState.currentEl.classList.remove('hover-dwell-active');
+      // Start slow reset of the bar
+      const fb = btnHoverState.currentEl.querySelector('.sco-dwell-fill');
+      if (fb && fb.style.width !== '0%') {
+        btnHoverState.resetEl = fb;
+        btnHoverState.resetStartTime = Date.now();
+      }
+    }
+    btnHoverState.currentEl = hoveredBtn;
+    btnHoverState.dwellStart = hoveredBtn ? now : null;
+    btnHoverState.triggered = false;
+    arc.style.strokeDashoffset = CIRCUMFERENCE;
+    if (!hoveredBtn) {
+      ring.classList.remove('visible');
+      // Continue resetting if there's a resetEl
+      if (btnHoverState.resetEl) {
+        const elapsedReset = now - btnHoverState.resetStartTime;
+        const resetProgress = Math.min(1, elapsedReset / btnHoverState.resetDuration);
+        const currentWidth = parseFloat(btnHoverState.resetEl.style.width) || 0;
+        const resetWidth = currentWidth * (1 - resetProgress);
+        btnHoverState.resetEl.style.width = resetWidth + '%';
+        
+        if (resetProgress >= 1) {
+          btnHoverState.resetEl.style.width = '0%';
+          btnHoverState.resetEl = null;
+          btnHoverState.resetStartTime = null;
+        }
+      }
+      return;
+    }
+    // Clear reset since we're now hovering over a new button
+    btnHoverState.resetEl = null;
+    btnHoverState.resetStartTime = null;
+  }
+
+  // If still not hovering, continue reset animation
+  if (!hoveredBtn) {
+    ring.classList.remove('visible');
+    // Continue resetting if there's a resetEl
+    if (btnHoverState.resetEl) {
+      const elapsedReset = now - btnHoverState.resetStartTime;
+      const resetProgress = Math.min(1, elapsedReset / btnHoverState.resetDuration);
+      const currentWidth = parseFloat(btnHoverState.resetEl.style.width) || 0;
+      const resetWidth = currentWidth * (1 - resetProgress);
+      btnHoverState.resetEl.style.width = resetWidth + '%';
+      
+      if (resetProgress >= 1) {
+        btnHoverState.resetEl.style.width = '0%';
+        btnHoverState.resetEl = null;
+        btnHoverState.resetStartTime = null;
+      }
+    }
+    return;
+  }
+
+  // Position ring at hand point
+  ring.style.left = sx + 'px';
+  ring.style.top  = sy + 'px';
+  ring.classList.add('visible');
+  hoveredBtn.classList.add('hover-dwell-active');
+
+  // Clear any ongoing reset since we're now actively hovering
+  btnHoverState.resetEl = null;
+  btnHoverState.resetStartTime = null;
+
+  // Progress
+  const progress = Math.min(1, (now - btnHoverState.dwellStart) / BTN_DWELL);
+  arc.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+
+  // Update dwell fill bar if this button has one
+  const fillBar = hoveredBtn.querySelector('.sco-dwell-fill');
+  if (fillBar) fillBar.style.width = (progress * 100) + '%';
+
+  // Pulse ring color when nearly done
+  if (progress > 0.85) {
+    arc.style.stroke = 'rgba(255,255,255,0.9)';
+  } else {
+    arc.style.stroke = 'var(--cyan)';
+  }
+
+  // Fire!
+  if (progress >= 1 && !btnHoverState.triggered) {
+    btnHoverState.triggered = true;
+    hoveredBtn.classList.remove('hover-dwell-active');
+    ring.classList.remove('visible');
+    arc.style.strokeDashoffset = CIRCUMFERENCE;
+    if (fillBar) fillBar.style.width = '0%';
+    btnHoverState.currentEl = null;
+    btnHoverState.dwellStart = null;
+    // Flash on button
+    hoveredBtn.style.transform = 'scale(0.96)';
+    setTimeout(() => { hoveredBtn.style.transform = ''; }, 150);
+    // Execute action
+    hoverButtons[hoveredBtn.id]();
+  }
+}
+
+function clearBtnHover() {
+  const ring = document.getElementById('hoverBtnRing');
+  const arc  = document.getElementById('hoverBtnArc');
+  if (btnHoverState.currentEl) {
+    btnHoverState.currentEl.classList.remove('hover-dwell-active');
+    const fb = btnHoverState.currentEl.querySelector('.sco-dwell-fill');
+    if (fb) {
+      // Start reset animation instead of instant clear
+      btnHoverState.resetEl = fb;
+      btnHoverState.resetStartTime = Date.now();
+    }
+  }
+  btnHoverState.currentEl = null;
+  btnHoverState.dwellStart = null;
+  btnHoverState.triggered = false;
+  if (ring) {
+    ring.classList.remove('visible');
+    arc.style.strokeDashoffset = CIRCUMFERENCE;
+  }
+}
+
+
+// ══════════════════════════════════════════════════════
+// EXERCISE SELECTION FLOW
+// ══════════════════════════════════════════════════════
+let epIndex = 0; // current index in exercise picker
+
+function goToGroupSelect() {
+  showScreen('groupSelect');
+}
+
+function selectGroup(group) {
+  selectedGroup = group;
+  exercises = exerciseLibrary[group];
+  epIndex = 0;
+  document.getElementById('epGroupLabel').textContent = group;
+  renderEpCard();
+  renderEpDots();
+  showScreen('exercisePick');
+}
+
+function epNav(dir) {
+  const list = exerciseLibrary[selectedGroup];
+  epIndex = (epIndex + dir + list.length) % list.length;
+  renderEpCard();
+  renderEpDots();
+}
+
+function renderEpCard() {
+  const ex = exerciseLibrary[selectedGroup][epIndex];
+  document.getElementById('epCardName').textContent = ex.name;
+  document.getElementById('epCardSub').textContent  = ex.sub;
+  const cuesEl = document.getElementById('epCues');
+  cuesEl.innerHTML = ex.cues.map(c =>
+    `<div class="ep-cue">${c}</div>`
+  ).join('');
+}
+
+function renderEpDots() {
+  const list = exerciseLibrary[selectedGroup];
+  const dotsEl = document.getElementById('epDots');
+  dotsEl.innerHTML = list.map((_, i) =>
+    `<div class="ep-dot${i === epIndex ? ' active' : ''}"></div>`
+  ).join('');
+}
+
+function startWorkoutFromPicker() {
+  // Set the session exercises to ALL exercises in the chosen group
+  exercises = exerciseLibrary[selectedGroup];
+  // Start from the exercise the user was browsing
+  state.currentExercise = epIndex;
+  state.sessionStarted = true;
+  state.activeSeconds = 0;
+  state.setsDone = 0;
+  state.totalReps = 0;
+  state.reps = 0;
+
+  // Rebuild exercise dots for workout screen
+  const dotsEl = document.getElementById('exerciseDots');
+  dotsEl.innerHTML = exercises.map((_, i) =>
+    `<div class="ex-dot${i === epIndex ? ' active' : ''}" onclick="goToExercise(${i})"></div>`
+  ).join('');
+
+  showScreen('workout');
+  loadExercise(state.currentExercise);
+  startActiveTimer();
+
+  const video = document.getElementById('mainVideo');
+  video.play().then(() => {
+    state.isPlaying = true;
+    document.getElementById('ppCircle').textContent = '⏸';
+    document.getElementById('ppLabel').textContent = 'PAUSE';
+    document.getElementById('pauseOverlay').classList.remove('visible');
+    document.getElementById('activeDot').style.animationPlayState = 'running';
+    startRepSync();
+  }).catch(() => {});
+}
+
+// Register group cards and picker buttons in hoverButtons
+// (done after DOM is ready — we patch hoverButtons dynamically)
+function registerPickerHoverButtons() {
+  const groups = Object.keys(exerciseLibrary);
+  groups.forEach((g, i) => {
+    hoverButtons['gsCard' + i] = () => selectGroup(g);
+  });
+  hoverButtons['btnStartSession']  = () => goToGroupSelect();
+  hoverButtons['btnBackToGroups']  = () => goToGroupSelect();
+  hoverButtons['btnEpPrev']        = () => epNav(-1);
+  hoverButtons['btnEpNext']        = () => epNav(1);
+  hoverButtons['btnStartWorkout']  = () => startWorkoutFromPicker();
+}
+
+// ══════════════════════════════════
+// KEYBOARD SHORTCUTS (demo)
+// ══════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (state.currentScreen === 'welcome') {
+    goToGroupSelect();
+    return;
+  }
+  if (state.currentScreen === 'groupSelect') {
+    // keyboard: press 1-4 to pick group
+    const groups = Object.keys(exerciseLibrary);
+    const idx = parseInt(e.key) - 1;
+    if (idx >= 0 && idx < groups.length) selectGroup(groups[idx]);
+    return;
+  }
+  if (state.currentScreen === 'exercisePick') {
+    if (e.key === 'ArrowRight') epNav(1);
+    if (e.key === 'ArrowLeft')  epNav(-1);
+    if (e.key === 'Enter')      startWorkoutFromPicker();
+    return;
+  }
+  if (state.currentScreen !== 'workout') return;
+  if (e.key === 'ArrowRight') simulateGesture('next');
+  if (e.key === 'ArrowLeft')  simulateGesture('prev');
+  if (e.key === ' ')          { e.preventDefault(); simulateGesture('playpause'); }
+  if (e.key === '+' || e.key === '=') changeRep(1);
+  if (e.key === '-')          changeRep(-1);
+  if (e.key === 'r')          resetReps();
+  if (e.key === 'Escape')     endSession();
+});
+
+registerPickerHoverButtons();
+
+
+</script>
+
+<!-- ════════════ SET COMPLETE OVERLAY ════════════ -->
+<div class="set-complete-overlay" id="setCompleteOverlay">
+  <div class="sco-eyebrow" id="scoEyebrow">✓ Set Complete</div>
+  <div class="sco-title" id="scoTitle">GREAT<br><span id="scoExName">SQUATS</span></div>
+  <div class="sco-subtitle">10 reps completed — rest up, then keep going</div>
+  <div class="sco-stats">
+    <div class="sco-stat">
+      <div class="sco-stat-num">10</div>
+      <div class="sco-stat-label">Reps Done</div>
+    </div>
+    <div class="sco-stat">
+      <div class="sco-stat-num" id="scoSets">1</div>
+      <div class="sco-stat-label">Sets Total</div>
+    </div>
+    <div class="sco-stat">
+      <div class="sco-stat-num" id="scoTime">—</div>
+      <div class="sco-stat-label">Active Time</div>
+    </div>
+  </div>
+  <div class="sco-actions">
+    <button class="sco-btn primary" id="btnAnotherSet" data-hover="doAnotherSet" onclick="doAnotherSet()">
+      <span class="sco-btn-text">DO ANOTHER SET</span>
+      <span class="sco-dwell-fill" id="dwellFillAnotherSet"></span>
+    </button>
+    <button class="sco-btn secondary" id="btnNextExercise" data-hover="nextExerciseFromOverlay" onclick="nextExerciseFromOverlay()">
+      <span class="sco-btn-text">NEXT EXERCISE</span>
+      <span class="sco-dwell-fill" id="dwellFillNextExercise"></span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ════════════ GESTURE CAMERA LAYER ════════════ -->
+<!-- Hidden webcam feed used by MediaPipe -->
+<!-- Webcam used by MediaPipe only — not shown to user -->
+<video id="gestureWebcam" autoplay playsinline muted
+  style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;
+         pointer-events:none;" aria-hidden="true"></video>
+<canvas id="gestureCanvas"
+  style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;
+         pointer-events:none;" aria-hidden="true"></canvas>
+
+<!-- Status elements kept in DOM for JS refs but hidden -->
+<div id="gestureStatusBar" style="display:none;">
+  <span id="gsIndicator"></span>
+  <span id="gsText"></span>
+  <span id="gsGesture"></span>
+</div>
+
+<!-- Full-screen hover zone overlay canvas -->
+<canvas id="hoverZoneCanvas" style="
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:295;pointer-events:none;opacity:0;
+  transition:opacity 0.4s;"></canvas>
+
+<!-- Hover control auto-starts on load -->
+
+
+<!-- ════════════ HAND CURSOR (all screens) ════════════ -->
+<div id="handCursor" style="
+  position:fixed;width:16px;height:16px;border-radius:50%;
+  background:rgba(0,229,200,0.85);
+  box-shadow:0 0 12px rgba(0,229,200,0.6),0 0 24px rgba(0,229,200,0.3);
+  pointer-events:none;z-index:9990;
+  transform:translate(-50%,-50%);
+  opacity:0;transition:opacity 0.3s;
+  margin:0;padding:0;"></div>
+<div id="handCursorRing" style="
+  position:fixed;width:40px;height:40px;border-radius:50%;
+  border:1.5px solid rgba(0,229,200,0.4);
+  pointer-events:none;z-index:9989;
+  transform:translate(-50%,-50%);
+  opacity:0;transition:opacity 0.3s;"></div>
+
+<!-- ════════════ HOVER BUTTON RING ════════════ -->
+<svg id="hoverBtnRing" class="hover-btn-ring" width="80" height="80" viewBox="0 0 80 80" style="margin-left:-40px;margin-top:-40px;pointer-events:none;">
+  <circle cx="40" cy="40" r="34" fill="none" stroke="var(--cyan)" stroke-width="2.5" opacity="0.2"/>
+  <circle id="hoverBtnArc" cx="40" cy="40" r="34" fill="none" stroke="var(--cyan)" stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-dasharray="213.6"
+    stroke-dashoffset="213.6"
+    transform="rotate(-90 40 40)"
+    style="filter:drop-shadow(0 0 4px rgba(0,229,200,0.6));transition:stroke-dashoffset 0.05s linear;"/>
+</svg>
+
+</body>
+</html>
