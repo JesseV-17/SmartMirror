@@ -577,6 +577,20 @@
   }
 
   /* ── BOTTOM BAR ── */
+  /* Control panel on right side, stacked vertically */
+  .control-panel {
+    position: absolute;
+    top: clamp(60px,8vh,80px);
+    right: 0;
+    width: clamp(40px,5vw,56px);
+    z-index: 25;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px,1.5vh,16px);
+    padding: clamp(8px,1vw,12px);
+    align-items: center;
+  }
+
   .bottom-bar {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -589,9 +603,11 @@
   }
 
   .play-pause-btn {
-    display: flex; align-items: center; gap: 14px;
+    display: flex; align-items: center; justify-content: center;
     background: transparent; border: none; cursor: pointer;
     padding: 0;
+    width: clamp(40px,5vw,56px);
+    height: clamp(40px,5vw,56px);
   }
   .pp-circle {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -610,16 +626,15 @@
     transform: scale(1.05);
   }
   .pp-label {
-    font-family: var(--font-display);
-    font-size: clamp(12px,1.5vw,18px);
-    letter-spacing: 0.1em;
-    color: var(--white);
+    display: none;
   }
 
   .speed-btn {
     display: flex; align-items: center; justify-content: center;
     background: transparent; border: none; cursor: pointer;
     padding: 0;
+    width: clamp(40px,5vw,56px);
+    height: clamp(40px,5vw,56px);
   }
   .speed-display {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -641,7 +656,7 @@
   }
 
   .session-progress {
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    display: none;
   }
   .progress-track {
     width: clamp(100px,15vw,200px); height: 2px;
@@ -669,13 +684,18 @@
     border: 1.5px solid rgba(255,71,87,0.8);
     color: #ff6b78;
     font-family: var(--font-mono);
-    font-size: clamp(9px,1vw,11px);
+    font-size: 18px;
     letter-spacing: 0.2em;
-    padding: clamp(8px,1.2vh,12px) clamp(12px,1.5vw,22px);
+    width: clamp(40px,5vw,56px);
+    height: clamp(40px,5vw,56px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
     cursor: pointer;
     text-transform: uppercase;
     transition: all 0.2s;
-    border-radius: 2px;
+    border-radius: 50%;
     font-weight: 600;
   }
   .end-btn:hover {
@@ -1715,17 +1735,22 @@
 
     </div>
 
-  <!-- BOTTOM BAR (absolute overlay) -->
+    <!-- Control Panel (right side, vertically stacked) -->
+    <div class="control-panel">
+      <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()">
+        <div class="pp-circle" id="ppCircle">▶</div>
+        <div class="pp-label" id="ppLabel">PLAY</div>
+      </button>
+
+      <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()">
+        <div class="speed-display" id="speedDisplay">1x</div>
+      </button>
+
+      <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()">×</button>
+    </div>
+
+  <!-- BOTTOM BAR (absolute overlay) — hidden, progress moved -->
   <div class="bottom-bar">
-
-    <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()">
-      <div class="pp-circle" id="ppCircle">▶</div>
-      <div class="pp-label" id="ppLabel">PLAY</div>
-    </button>
-
-    <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()">
-      <div class="speed-display" id="speedDisplay">1x</div>
-    </button>
 
     <div class="session-progress">
       <div class="progress-track">
@@ -1733,8 +1758,6 @@
       </div>
       <div class="progress-label" id="progressLabel">EXERCISE 1 OF 2</div>
     </div>
-
-    <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()">END SESSION</button>
 
   </div>
 
@@ -2373,10 +2396,7 @@ function predictGestures() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (results.landmarks && results.landmarks.length > 0) {
-        let landmarks = results.landmarks[0];
-        // Apply -90 degree rotation to camera registration
-        landmarks = rotateLandmarks(landmarks);
-        
+        const landmarks = results.landmarks[0];
         drawHandSkeleton(ctx, landmarks, canvas.width, canvas.height);
 
         const gestureName = results.gestures[0]?.[0]?.categoryName || 'None';
@@ -2415,16 +2435,7 @@ function predictGestures() {
 // ── Rotate landmarks by -90 degrees (clockwise) ──
 function rotateLandmarks(landmarks) {
   return landmarks.map(lm => ({
-    ...lm,
-    x: lm.y,
-    y: 1 - lm.x
-  }));
-}
-
-// ── Draw minimal skeleton on preview canvas ──
-function drawHandSkeleton(ctx, landmarks, w, h) {
-  const connections = [
-    [0,1],[1,2],[2,3],[3,4],       // thumb
+    ..,1],[1,2],[2,3],[3,4],       // thumb
     [0,5],[5,6],[6,7],[7,8],       // index
     [0,9],[9,10],[10,11],[11,12],  // middle
     [0,13],[13,14],[14,15],[15,16],// ring
