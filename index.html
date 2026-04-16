@@ -583,13 +583,27 @@
     z-index: 20;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    gap: clamp(32px,5vw,60px);
     padding: clamp(10px,1.5vh,16px) clamp(14px,2vw,28px) clamp(14px,2.5vh,24px);
     background: linear-gradient(to top, rgba(5,5,8,0.85) 0%, transparent 100%);
   }
 
+  /* ── LEFT CONTROL PANEL (vertical stack) ── */
+  .left-control-panel {
+    position: absolute;
+    left: clamp(20px,4vw,52px);
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(12px,2vh,20px);
+    z-index: 24;
+  }
+
   .play-pause-btn {
-    display: flex; align-items: center; gap: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: clamp(6px,1vh,10px);
     background: transparent; border: none; cursor: pointer;
     padding: 0;
   }
@@ -611,13 +625,13 @@
   }
   .pp-label {
     font-family: var(--font-display);
-    font-size: clamp(12px,1.5vw,18px);
+    font-size: clamp(9px,1vw,12px);
     letter-spacing: 0.1em;
     color: var(--white);
   }
 
   .speed-btn {
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; gap: clamp(6px,1vh,10px);
     background: transparent; border: none; cursor: pointer;
     padding: 0;
   }
@@ -638,6 +652,12 @@
     background: rgba(0,229,200,0.25);
     box-shadow: 0 0 30px rgba(0,229,200,0.3);
     transform: scale(1.05);
+  }
+  .speed-label {
+    font-family: var(--font-display);
+    font-size: clamp(9px,1vw,12px);
+    letter-spacing: 0.1em;
+    color: var(--white);
   }
 
   .session-progress {
@@ -1945,20 +1965,34 @@
         <div class="pause-big">⏸</div>
       </div>
 
-      <!-- Navigation arrow overlays — large, clear, always visible -->
-      <div id="navArrowPrev" onclick="simulateGesture('prev')"
-        style="position:absolute;left:clamp(20px,4vw,52px);top:50%;transform:translateY(-50%);
-               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
-               display:flex;align-items:center;justify-content:center;
-               cursor:pointer;z-index:25;
-               background:rgba(5,5,8,0.7);
-               border:1.5px solid rgba(0,229,200,0.5);
-               backdrop-filter:blur(8px);
-               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
-                    animation:arrow-pulse-l 2s ease-in-out infinite;
-                    text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
-        <div id="prevExLabel" style="display:none;"></div>
+      <!-- Left Control Panel: Play/Pause + Navigation Arrow + Speed -->
+      <div class="left-control-panel">
+        <!-- Play/Pause Button -->
+        <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()">
+          <div class="pp-circle" id="ppCircle">▶</div>
+          <div class="pp-label" id="ppLabel">PLAY</div>
+        </button>
+
+        <!-- Navigation arrow — center of vertical stack -->
+        <div id="navArrowPrev" onclick="simulateGesture('prev')"
+          style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+                 display:flex;align-items:center;justify-content:center;
+                 cursor:pointer;z-index:25;
+                 background:rgba(5,5,8,0.7);
+                 border:1.5px solid rgba(0,229,200,0.5);
+                 backdrop-filter:blur(8px);
+                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
+          <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                      animation:arrow-pulse-l 2s ease-in-out infinite;
+                      text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
+          <div id="prevExLabel" style="display:none;"></div>
+        </div>
+
+        <!-- Speed Modifier Button -->
+        <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()">
+          <div class="speed-display" id="speedDisplay">1x</div>
+          <div class="speed-label">SPEED</div>
+        </button>
       </div>
 
       <div id="navArrowNext" onclick="simulateGesture('next')"
@@ -2017,15 +2051,6 @@
 
   <!-- BOTTOM BAR (absolute overlay) -->
   <div class="bottom-bar">
-
-    <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()">
-      <div class="pp-circle" id="ppCircle">▶</div>
-      <div class="pp-label" id="ppLabel">PLAY</div>
-    </button>
-
-    <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()">
-      <div class="speed-display" id="speedDisplay">1x</div>
-    </button>
 
     <div class="session-progress">
       <div class="progress-track">
