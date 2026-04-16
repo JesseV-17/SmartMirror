@@ -2432,10 +2432,10 @@ function predictGestures() {
   gestureEngine.animFrame = requestAnimationFrame(predictGestures);
 }
 
-// ── Rotate landmarks by -90 degrees (clockwise) ──
-function rotateLandmarks(landmarks) {
-  return landmarks.map(lm => ({
-    ..,1],[1,2],[2,3],[3,4],       // thumb
+// ── Draw minimal skeleton on preview canvas ──
+function drawHandSkeleton(ctx, landmarks, w, h) {
+  const connections = [
+    [0,1],[1,2],[2,3],[3,4],       // thumb
     [0,5],[5,6],[6,7],[7,8],       // index
     [0,9],[9,10],[10,11],[11,12],  // middle
     [0,13],[13,14],[14,15],[15,16],// ring
