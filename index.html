@@ -3264,5 +3264,24 @@ registerPickerHoverButtons();
     style="filter:drop-shadow(0 0 4px rgba(0,229,200,0.6));transition:stroke-dashoffset 0.05s linear;"/>
 </svg>
 
+<!-- Initialize cursor on page load -->
+<script>
+  // Show cursor at center on page load, before camera starts
+  window.addEventListener('load', () => {
+    const hc = document.getElementById('handCursor');
+    const hcr = document.getElementById('handCursorRing');
+    if (hc) {
+      hc.style.left = (window.innerWidth / 2) + 'px';
+      hc.style.top = (window.innerHeight / 2) + 'px';
+      hc.style.opacity = '1';
+    }
+    if (hcr) {
+      hcr.style.left = (window.innerWidth / 2) + 'px';
+      hcr.style.top = (window.innerHeight / 2) + 'px';
+      hcr.style.opacity = '1';
+    }
+  }, { once: true });
+</script>
+
 </body>
 </html>
