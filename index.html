@@ -378,16 +378,21 @@
   .swipe-arrow .arrow-icon { font-size: 14px; }
 
   /* ── SIDE PANEL ── */
-  .side-panel {
+  /* Exercise info panel below top bar */
+  .exercise-info-panel {
     position: absolute;
-    top: clamp(60px,8vh,80px);
-    right: 0;
-    width: clamp(160px,18vw,220px);
+    top: clamp(56px,8vh,80px);
+    right: clamp(8px,1vw,16px);
+    width: clamp(160px,18vw,280px);
     z-index: 30;
     display: flex;
     flex-direction: column;
     gap: clamp(6px,0.8vh,10px);
     padding: clamp(8px,1vw,12px);
+  }
+
+  .side-panel {
+    display: none;
   }
 
   .panel-card {
@@ -575,20 +580,48 @@
     letter-spacing: 0.1em;
     color: #ffffff;
   }
-
-  /* ── BOTTOM BAR ── */
-  /* Control panel on right side, stacked vertically */
-  .control-panel {
+bottom: clamp(120px,15vh,180px);
+    right: clamp(8px,1vw,16px)OM BAR ── */
+  /* Navigation and control buttons container */
+  .nav-controls {
     position: absolute;
-    top: clamp(60px,8vh,80px);
-    right: 0;
-    width: clamp(40px,5vw,56px);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     z-index: 25;
+  }
+
+  /* Left side button group */
+  .left-button-group {
     display: flex;
     flex-direction: column;
     gap: clamp(10px,1.5vh,16px);
-    padding: clamp(8px,1vw,12px);
     align-items: center;
+    margin-left: clamp(8px,2vw,24px);
+    pointer-events: all;
+  }
+
+  /* Right side button group */
+  .right-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(10px,1.5vh,16px);
+    align-items: center;
+    margin-right: clamp(8px,2vw,24px);
+    pointer-events: all;
+  }
+
+  /* Control panel — legacy, repositioned */
+  .control-panel {
+    position: static;
+    width: auto;
+    z-index: 25;
+    display: contents;
   }
 
   .bottom-bar {
@@ -1395,53 +1428,22 @@
      PORTRAIT / TALL SCREEN ADAPTIVE
      Full-body mirror layout
   ══════════════════════════════ */
+  /* Responsive for portrait/tall screens */
   @media (max-aspect-ratio: 3/4) {
-    /* Side panel moves to bottom overlay strip */
-    .side-panel {
-      top: auto !important;
-      bottom: 100px;
-      right: 0;
-      left: 0;
-      width: 100% !important;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-around;
-      padding: 8px 16px !important;
-      gap: 8px !important;
-      background: rgba(5,5,8,0.8);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(255,255,255,0.08);
+    /* Exercise info panel stays top right but adjusts */
+    .exercise-info-panel {
+      top: clamp(56px,8vh,80px) !important;
+      right: clamp(8px,1vw,16px) !important;
+      width: clamp(140px,20vw,220px) !important;
     }
-    .side-panel .panel-card {
-      flex: 1;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 12px !important;
+    /* Control panel adjusts position */
+    .control-panel {
+      bottom: clamp(60px,10vh,100px) !important;
+      right: clamp(8px,1vw,16px) !important;
     }
-    .rep-ring-wrap {
-      flex-direction: row !important;
-      align-items: center;
-      gap: 10px !important;
-    }
-    .exercise-name {
-      font-size: clamp(14px,4vw,22px) !important;
-    }
-    .rep-ring {
-      width: clamp(44px,8vw,56px) !important;
-      height: clamp(44px,8vw,56px) !important;
-    }
-    .rep-ring svg {
-      width: clamp(44px,8vw,56px) !important;
-      height: clamp(44px,8vw,56px) !important;
-    }
-    .rep-number {
-      font-size: clamp(16px,4vw,22px) !important;
-    }
-    /* Bottom bar moves up above the side panel strip */
+    /* Bottom bar moves up above control panel */
     .bottom-bar {
-      bottom: calc(100px + clamp(60px,10vh,80px)) !important;
+      bottom: calc(clamp(60px,10vh,100px) + clamp(280px,35vh,400px)) !important;
       background: transparent !important;
     }
     /* Nav arrows stay centred vertically in video */
@@ -1474,6 +1476,108 @@
     }
     .ep-card-name {
       font-size: clamp(36px,8vw,52px) !important;
+    }
+  }
+
+  @media (max-aspect-ratio: 1/2) {
+    /* Very tall mirrors (9:20 etc) — single column group cards */
+    .gs-grid {
+      grid-template-columns: 1fr !important;
+      width: min(80vw, 340px) !important;
+    }
+  }
+
+  /* ══════════════════════════════
+     SURFACE HUB 3 TABLET VIEW
+     2:3 aspect ratio (portrait orientation)
+  ══════════════════════════════ */
+  @media (max-aspect-ratio: 2/3) and (min-width: 1000px) {
+    /* Larger panels for big screen */
+    .exercise-info-panel {
+      top: clamp(72px,6vh,120px) !important;
+      right: clamp(16px,2vw,32px) !important;
+      width: clamp(220px,22vw,380px) !important;
+      gap: clamp(8px,1vh,14px) !important;
+      padding: clamp(12px,1.5vw,20px) !important;
+    }
+    
+    .panel-card {
+      padding: clamp(12px,1.5vh,16px) clamp(12px,1.5vw,18px) !important;
+    }
+    
+    .exercise-name {
+      font-size: clamp(20px,2.5vw,32px) !important;
+    }
+    
+    .exercise-sub {
+      font-size: clamp(10px,1vw,12px) !important;
+    }
+    
+    .rep-ring {
+      width: clamp(80px,8vw,100px) !important;
+      height: clamp(80px,8vw,100px) !important;
+    }
+    
+    .rep-ring svg {
+      width: clamp(80px,8vw,100px) !important;
+      height: clamp(80px,8vw,100px) !important;
+    }
+    
+    .rep-number {
+      font-size: clamp(24px,2.5vw,36px) !important;
+    }
+    
+    .rep-label {
+      font-size: clamp(11px,1.2vw,14px) !important;
+    }
+    
+    /* Control panel larger buttons */
+    .left-button-group,
+    .right-button-group {
+      gap: clamp(20px,2.5vh,32px) !important;
+      margin-left: clamp(20px,3vw,40px) !important;
+      margin-right: clamp(20px,3vw,40px) !important;
+    }
+    
+    .play-pause-btn,
+    .speed-btn {
+      width: clamp(56px,6vw,72px) !important;
+      height: clamp(56px,6vw,72px) !important;
+    }
+    
+    .pp-circle,
+    .speed-display {
+      width: clamp(52px,5.5vw,68px) !important;
+      height: clamp(52px,5.5vw,68px) !important;
+      font-size: clamp(20px,2vw,28px) !important;
+    }
+    
+    .end-btn {
+      width: clamp(56px,6vw,72px) !important;
+      height: clamp(56px,6vw,72px) !important;
+      font-size: clamp(28px,3vw,36px) !important;
+    }
+    
+    /* Larger nav arrows */
+    #navArrowPrev,
+    #navArrowNext {
+      width: clamp(60px,6vw,80px) !important;
+      height: clamp(60px,6vw,80px) !important;
+    }
+    
+    /* Top bar adjustments */
+    .top-bar {
+      padding: clamp(14px,2vh,24px) clamp(20px,2.5vw,40px) clamp(12px,1.5vh,20px) !important;
+    }
+    
+    .top-logo {
+      font-size: clamp(24px,3vw,36px) !important;
+    }
+    
+    .stat-value {
+      font-size: clamp(16px,2vw,24px) !important;
+    }
+  }
     }
   }
 
@@ -1638,70 +1742,57 @@
       </div>
       <div class="stat-block">
         <div class="stat-label">Exercise</div>
-        <div class="stat-value" id="exerciseIndex">1 / 2</div>
+       !-- Navigation and Control Buttons Container -->
+      <div class="nav-controls">
+        <!-- Left Side: Previous Exercise + Play/Pause + Speed -->
+        <div class="left-button-group">
+          <div id="navArrowPrev" onclick="simulateGesture('prev')"
+            style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+                   display:flex;align-items:center;justify-content:center;
+                   cursor:pointer;
+                   background:rgba(5,5,8,0.7);
+                   border:1.5px solid rgba(0,229,200,0.5);
+                   backdrop-filter:blur(8px);
+                   transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);pointer-events:all;">
+            <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                        animation:arrow-pulse-l 2s ease-in-out infinite;
+                        text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
+            <div id="prevExLabel" style="display:none;"></div>
+          </div>
+          <button class="play-pause-btn" id="btnPlayPause" data-hover="togglePlayPause" onclick="togglePlayPause()" style="pointer-events:all;">
+            <div class="pp-circle" id="ppCircle">▶</div>
+            <div class="pp-label" id="ppLabel">PLAY</div>
+          </button>
+          <button class="speed-btn" id="btnSpeed" data-hover="nextSpeed" onclick="nextSpeed()" style="pointer-events:all;">
+            <div class="speed-display" id="speedDisplay">1x</div>
+          </button>
+        </div>
+
+        <!-- Right Side: Next Exercise + End Session -->
+        <div class="right-button-group">
+          <div id="navArrowNext" onclick="simulateGesture('next')"
+            style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+                   display:flex;align-items:center;justify-content:center;
+                   cursor:pointer;
+                   background:rgba(5,5,8,0.7);
+                   border:1.5px solid rgba(0,229,200,0.5);
+                   backdrop-filter:blur(8px);
+                   transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);pointer-events:all;">
+            <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                        animation:arrow-pulse-r 2s ease-in-out infinite;
+                        text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
+            <div id="nextExLabel" style="display:none;"></div>
+          </div>
+          <button class="end-btn" id="btnEndSession" data-hover="endSession" onclick="endSession()" style="pointer-events:all;">×</button>
+        </div>
       </div>
+
     </div>
-  </div>
-
-  <!-- MAIN CONTENT: video fills entire screen -->
-  <div class="main-content">
-    <div class="video-container" id="videoContainer">
-      <video class="video-bg" id="videoBg" loop playsinline muted src="squat.mp4"></video>
-      <video id="mainVideo" loop playsinline src="squat.mp4"></video>
-
-      <div class="corner tl"></div>
-      <div class="corner tr"></div>
-      <div class="corner bl"></div>
-      <div class="corner br"></div>
-
-      <!-- Active time badge -->
-      <div class="active-time-badge">
-        <div class="active-dot" id="activeDot"></div>
-        <div class="active-time-text">ACTIVE · <span id="activeTimeBadge">00:00</span></div>
-      </div>
-
-      <!-- Pause overlay -->
-      <div class="pause-overlay" id="pauseOverlay">
-        <div class="pause-big">⏸</div>
-      </div>
-
-      <!-- Navigation arrow overlays — large, clear, always visible -->
-      <div id="navArrowPrev" onclick="simulateGesture('prev')"
-        style="position:absolute;left:clamp(20px,4vw,52px);top:50%;transform:translateY(-50%);
-               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
-               display:flex;align-items:center;justify-content:center;
-               cursor:pointer;z-index:25;
-               background:rgba(5,5,8,0.7);
-               border:1.5px solid rgba(0,229,200,0.5);
-               backdrop-filter:blur(8px);
-               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
-                    animation:arrow-pulse-l 2s ease-in-out infinite;
-                    text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
-        <div id="prevExLabel" style="display:none;"></div>
-      </div>
-
-      <div id="navArrowNext" onclick="simulateGesture('next')"
-        style="position:absolute;right:clamp(170px,19vw,244px);top:50%;transform:translateY(-50%);
-               width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
-               display:flex;align-items:center;justify-content:center;
-               cursor:pointer;z-index:25;
-               background:rgba(5,5,8,0.7);
-               border:1.5px solid rgba(0,229,200,0.5);
-               backdrop-filter:blur(8px);
-               transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-        <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
-                    animation:arrow-pulse-r 2s ease-in-out infinite;
-                    text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
-        <div id="nextExLabel" style="display:none;"></div>
-      </div>
-    </div>
-
 
   </div>
 
-    <!-- Side Panel -->
-    <div class="side-panel">
+    <!-- Exercise Info Panel (below top bar on right) -->
+    <div class="exercise-info-panel">
 
       <!-- Exercise Info -->
       <div class="panel-card">
@@ -2407,8 +2498,8 @@ function predictGestures() {
         // Swipe detection using all hand landmarks for better motion tracking
         detectSwipe(landmarks);
         
-        // Button hover — use index fingertip (landmark 8) for pointer finger tracking
-        const _cursor = landmarks[8];
+        // Button hover — use wrist/palm (landmark 0) for hand tracking
+        const _cursor = landmarks[0];
         updateBtnHover(1 - _cursor.x, _cursor.y);
       } else {
         // No hand — reset swipe
@@ -2588,9 +2679,9 @@ hoverZones.forEach(z => {
 });
 
 function getHandNormalized(landmarks) {
-  // Use index fingertip (landmark 8) for pointer finger tracking
+  // Use wrist/palm (landmark 0) for hand tracking
   // x is mirrored in the webcam preview, so we flip: realX = 1 - lm.x
-  const pointer = landmarks[8];
+  const pointer = landmarks[0];
   return { x: 1 - pointer.x, y: pointer.y };
 }
 
