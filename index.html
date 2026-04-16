@@ -2373,7 +2373,10 @@ function predictGestures() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       if (results.landmarks && results.landmarks.length > 0) {
-        const landmarks = results.landmarks[0];
+        let landmarks = results.landmarks[0];
+        // Apply -90 degree rotation to camera registration
+        landmarks = rotateLandmarks(landmarks);
+        
         drawHandSkeleton(ctx, landmarks, canvas.width, canvas.height);
 
         const gestureName = results.gestures[0]?.[0]?.categoryName || 'None';
@@ -2407,6 +2410,15 @@ function predictGestures() {
   }
 
   gestureEngine.animFrame = requestAnimationFrame(predictGestures);
+}
+
+// ── Rotate landmarks by -90 degrees (clockwise) ──
+function rotateLandmarks(landmarks) {
+  return landmarks.map(lm => ({
+    ...lm,
+    x: lm.y,
+    y: 1 - lm.x
+  }));
 }
 
 // ── Draw minimal skeleton on preview canvas ──
