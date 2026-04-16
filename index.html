@@ -2446,6 +2446,9 @@ async function startGestureCamera() {
     gestureEngine.running = true;
     gestureEngine.lastVideoTime = -1;
 
+    // Show cursor at center position initially
+    updateHandCursor(0.5, 0.5);
+
     // Show hover zone overlay
     const hzCanvas = document.getElementById('hoverZoneCanvas');
     resizeHoverCanvas();
