@@ -2879,6 +2879,9 @@ function getButtonAtPoint(nx, ny) {
 }
 
 function updateBtnHover(nx, ny) {
+  // Ensure coordinates are within bounds
+  nx = Math.max(0, Math.min(1, nx || 0.5));
+  ny = Math.max(0, Math.min(1, ny || 0.5));
   const sx = nx * window.innerWidth;
   const sy = ny * window.innerHeight;
   const now = Date.now();
