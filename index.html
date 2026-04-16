@@ -580,8 +580,10 @@
     letter-spacing: 0.1em;
     color: #ffffff;
   }
-bottom: clamp(120px,15vh,180px);
-    right: clamp(8px,1vw,16px)OM BAR ── */
+
+  /* ═══════════════════════════════
+     NAVIGATION AND CONTROL BUTTONS
+     ═══════════════════════════════ */
   /* Navigation and control buttons container */
   .nav-controls {
     position: absolute;
@@ -2500,7 +2502,10 @@ function predictGestures() {
         
         // Button hover — use wrist/palm (landmark 0) for hand tracking
         const _cursor = landmarks[0];
-        updateBtnHover(1 - _cursor.x, _cursor.y);
+        if (_cursor && typeof _cursor.x === 'number' && typeof _cursor.y === 'number') {
+          updateHandCursor(1 - _cursor.x, _cursor.y);
+          updateBtnHover(1 - _cursor.x, _cursor.y);
+        }
       } else {
         // No hand — reset swipe
         gestureEngine.swipe.active = false;
@@ -2510,10 +2515,7 @@ function predictGestures() {
         updateGestureStatus('—');
         clearHoverZones();
         clearBtnHover();
-        const hc2 = document.getElementById('handCursor');
-        const hcr2 = document.getElementById('handCursorRing');
-        if (hc2) hc2.style.opacity = '0';
-        if (hcr2) hcr2.style.opacity = '0';
+        hideCursor();
       }
     } catch(e) {
       // silently ignore frame errors
@@ -2878,6 +2880,39 @@ function getButtonAtPoint(nx, ny) {
   return null;
 }
 
+// Update hand cursor position and visibility
+function updateHandCursor(nx, ny) {
+  if (typeof nx !== 'number' || typeof ny !== 'number') {
+    hideCursor();
+    return;
+  }
+  // Clamp to valid range
+  nx = Math.max(0, Math.min(1, nx));
+  ny = Math.max(0, Math.min(1, ny));
+  const sx = nx * window.innerWidth;
+  const sy = ny * window.innerHeight;
+  
+  const hc = document.getElementById('handCursor');
+  const hcr = document.getElementById('handCursorRing');
+  if (hc) {
+    hc.style.left = sx + 'px';
+    hc.style.top = sy + 'px';
+    hc.style.opacity = '1';
+  }
+  if (hcr) {
+    hcr.style.left = sx + 'px';
+    hcr.style.top = sy + 'px';
+    hcr.style.opacity = '1';
+  }
+}
+
+function hideCursor() {
+  const hc = document.getElementById('handCursor');
+  const hcr = document.getElementById('handCursorRing');
+  if (hc) hc.style.opacity = '0';
+  if (hcr) hcr.style.opacity = '0';
+}
+
 function updateBtnHover(nx, ny) {
   // Ensure coordinates are within bounds
   nx = Math.max(0, Math.min(1, nx || 0.5));
@@ -2888,11 +2923,7 @@ function updateBtnHover(nx, ny) {
   const ring = document.getElementById('hoverBtnRing');
   const arc  = document.getElementById('hoverBtnArc');
 
-  // Move the always-visible hand cursor
-  const hc = document.getElementById('handCursor');
-  const hcr = document.getElementById('handCursorRing');
-  if (hc) { hc.style.left = sx+'px'; hc.style.top = sy+'px'; hc.style.opacity = '1'; }
-  if (hcr) { hcr.style.left = sx+'px'; hcr.style.top = sy+'px'; hcr.style.opacity = '1'; }
+  // Cursor is now managed by updateHandCursor()
 
   const hoveredBtn = getButtonAtPoint(nx, ny);
 
@@ -3207,17 +3238,19 @@ registerPickerHoverButtons();
 <div id="handCursor" style="
   position:fixed;width:16px;height:16px;border-radius:50%;
   background:rgba(0,229,200,0.85);
-  box-shadow:0 0 12px rgba(0,229,200,0.6),0 0 24px rgba(0,229,200,0.3);
+  box-shadow:0 0 12px rgba(0,229,200,0.6),0 0 24px rgba(0,229,200,0.3),inset 0 0 8px rgba(0,229,200,0.4);
   pointer-events:none;z-index:9990;
   transform:translate(-50%,-50%);
-  opacity:0;transition:opacity 0.3s;
-  margin:0;padding:0;"></div>
+  opacity:0;transition:opacity 0.2s ease-out;
+  margin:0;padding:0;left:0;top:0;"></div>
 <div id="handCursorRing" style="
   position:fixed;width:40px;height:40px;border-radius:50%;
-  border:1.5px solid rgba(0,229,200,0.4);
+  border:2px solid rgba(0,229,200,0.6);
+  box-shadow:0 0 8px rgba(0,229,200,0.3),inset 0 0 8px rgba(0,229,200,0.1);
   pointer-events:none;z-index:9989;
   transform:translate(-50%,-50%);
-  opacity:0;transition:opacity 0.3s;"></div>
+  opacity:0;transition:opacity 0.2s ease-out;
+  margin:0;padding:0;left:0;top:0;"></div>
 
 <!-- ════════════ HOVER BUTTON RING ════════════ -->
 <svg id="hoverBtnRing" class="hover-btn-ring" width="80" height="80" viewBox="0 0 80 80" style="margin-left:-40px;margin-top:-40px;pointer-events:none;">
