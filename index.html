@@ -1465,6 +1465,306 @@
     }
   }
 
+  /* ══════════════════════════════
+     SURFACE HUB 3 LANDSCAPE MODE
+     Ultra-wide screens (16:9, 21:9, wider)
+     Horizontal layout optimization
+  ══════════════════════════════ */
+  @media (min-aspect-ratio: 16/9) {
+    /* ── WELCOME SCREEN — Ultra-wide ── */
+    #welcome {
+      flex-direction: row;
+      gap: 80px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .welcome-logo {
+      font-size: clamp(180px, 35vw, 480px);
+    }
+
+    .welcome-tagline {
+      font-size: clamp(8px, 1.2vw, 14px);
+    }
+
+    /* Wave prompt section on right */
+    .wave-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── WORKOUT SCREEN — Wide optimized ── */
+    .top-bar {
+      padding: clamp(12px, 1.5vh, 16px) clamp(24px, 3vw, 40px);
+    }
+
+    .session-stats {
+      gap: clamp(24px, 3vw, 48px);
+    }
+
+    /* Side panel repositioned for ultra-wide */
+    .side-panel {
+      top: clamp(80px, 12vh, 120px) !important;
+      right: clamp(20px, 2vw, 40px) !important;
+      width: clamp(200px, 20vw, 300px) !important;
+      gap: clamp(8px, 1vh, 14px) !important;
+    }
+
+    /* Larger rep counter for visibility */
+    .rep-ring {
+      width: clamp(100px, 12vw, 160px) !important;
+      height: clamp(100px, 12vw, 160px) !important;
+    }
+
+    .rep-ring svg {
+      width: clamp(100px, 12vw, 160px) !important;
+      height: clamp(100px, 12vw, 160px) !important;
+    }
+
+    .rep-number {
+      font-size: clamp(28px, 3.5vw, 42px) !important;
+    }
+
+    .exercise-name {
+      font-size: clamp(24px, 3vw, 36px) !important;
+    }
+
+    /* Bottom bar positioning */
+    .bottom-bar {
+      padding: clamp(12px, 2vh, 20px) clamp(24px, 3vw, 40px);
+    }
+
+    .play-pause-btn {
+      gap: clamp(16px, 2vw, 32px);
+    }
+
+    .pp-circle {
+      width: clamp(56px, 7vw, 84px) !important;
+      height: clamp(56px, 7vw, 84px) !important;
+    }
+
+    /* Navigation arrows positioned for wide screen */
+    #navArrowPrev {
+      left: clamp(20px, 3vw, 60px) !important;
+      width: clamp(56px, 7vw, 84px) !important;
+      height: clamp(56px, 7vw, 84px) !important;
+    }
+
+    #navArrowNext {
+      right: clamp(20px, 3vw, 60px) !important;
+      width: clamp(56px, 7vw, 84px) !important;
+      height: clamp(56px, 7vw, 84px) !important;
+    }
+
+    /* ── GROUP SELECT — Grid layout for wide ── */
+    #groupSelect {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      padding: 60px 40px;
+    }
+
+    .gs-title {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: clamp(32px, 4vw, 56px);
+    }
+
+    .gs-subtitle {
+      position: absolute;
+      top: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 0;
+    }
+
+    .gs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: clamp(16px, 2vw, 32px);
+      width: min(95vw, 1400px);
+      margin-top: 100px;
+    }
+
+    .gs-card {
+      padding: clamp(28px, 3vh, 40px) clamp(20px, 2vw, 32px);
+    }
+
+    .gs-card-icon {
+      font-size: clamp(32px, 4vw, 48px);
+    }
+
+    .gs-card-name {
+      font-size: clamp(16px, 2vw, 24px);
+    }
+
+    .gs-card-count {
+      font-size: clamp(11px, 1.2vw, 14px);
+    }
+
+    /* ── EXERCISE PICKER — Carousel layout ── */
+    #exercisePick {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ep-group-label {
+      font-size: clamp(12px, 1.5vw, 16px);
+      margin-bottom: clamp(16px, 2vh, 24px);
+    }
+
+    .ep-title {
+      font-size: clamp(28px, 3.5vw, 42px);
+      margin-bottom: clamp(32px, 4vh, 48px);
+    }
+
+    .ep-carousel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(24px, 4vw, 60px);
+      width: 100%;
+    }
+
+    .ep-arrow {
+      font-size: clamp(28px, 4vw, 48px);
+      width: clamp(56px, 7vw, 84px);
+      height: clamp(56px, 7vw, 84px);
+    }
+
+    .ep-card {
+      width: min(50vw, 600px);
+      padding: clamp(40px, 5vh, 60px) clamp(32px, 4vw, 56px);
+    }
+
+    .ep-card-name {
+      font-size: clamp(56px, 7vw, 84px);
+    }
+
+    .ep-card-sub {
+      font-size: clamp(14px, 1.8vw, 20px);
+    }
+
+    .ep-cue {
+      font-size: clamp(12px, 1.5vw, 16px);
+    }
+
+    .ep-hint {
+      font-size: clamp(12px, 1.5vw, 16px);
+      margin-top: clamp(24px, 3vh, 40px);
+    }
+
+    .ep-dots {
+      margin-bottom: clamp(24px, 3vh, 40px);
+      gap: clamp(12px, 1.5vw, 18px);
+    }
+
+    .ep-dot {
+      width: clamp(8px, 1vw, 12px);
+      height: clamp(8px, 1vw, 12px);
+    }
+
+    .ep-dot.active {
+      width: clamp(24px, 3vw, 32px);
+    }
+
+    /* ── SET COMPLETE OVERLAY — Wide view ── */
+    .set-complete-overlay {
+      padding: 0 clamp(60px, 8vw, 120px);
+    }
+
+    .sco-title {
+      font-size: clamp(40px, 5vw, 64px);
+    }
+
+    .sco-subtitle {
+      font-size: clamp(14px, 1.8vw, 20px);
+    }
+
+    .sco-stat {
+      padding: clamp(20px, 2vh, 28px) clamp(32px, 4vw, 56px);
+    }
+
+    .sco-stat-num {
+      font-size: clamp(48px, 6vw, 72px);
+    }
+
+    .sco-btn {
+      font-size: clamp(16px, 2vw, 24px);
+      padding: clamp(16px, 2vh, 20px) clamp(32px, 4vw, 56px);
+      min-width: clamp(220px, 25vw, 320px);
+    }
+
+    /* ── WELCOME BUTTON ── */
+    #btnStartSession {
+      font-size: clamp(28px, 3.5vw, 42px) !important;
+      padding: clamp(20px, 3vh, 32px) clamp(48px, 6vw, 80px) !important;
+    }
+
+    /* ── GESTURE HINT BAR ── */
+    .gesture-hint-bar {
+      gap: clamp(32px, 4vw, 60px);
+      padding: clamp(16px, 2vh, 24px) clamp(28px, 4vw, 48px);
+      bottom: clamp(40px, 5vh, 80px);
+    }
+
+    .gesture-hint-bar .hint-item {
+      font-size: clamp(12px, 1.5vw, 16px);
+      gap: clamp(12px, 1.5vw, 18px);
+    }
+
+    .gesture-hint-bar .hint-item .icon {
+      font-size: clamp(20px, 2.5vw, 28px);
+    }
+  }
+
+  /* ══════════════════════════════
+     ULTRA-WIDE LANDSCAPE (21:9 and wider)
+     Maximum horizontal optimization
+  ══════════════════════════════ */
+  @media (min-aspect-ratio: 21/9) {
+    /* Maximize horizontal spacing */
+    #welcome {
+      gap: clamp(100px, 12vw, 200px);
+    }
+
+    .welcome-logo {
+      font-size: clamp(200px, 40vw, 520px);
+    }
+
+    /* Side panel wider on ultra-wide */
+    .side-panel {
+      width: clamp(280px, 25vw, 400px) !important;
+    }
+
+    /* Group select cards in wider grid */
+    .gs-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: clamp(24px, 3vw, 40px);
+    }
+
+    /* Exercise carousel more prominent */
+    .ep-card {
+      width: min(60vw, 800px);
+    }
+
+    /* Top and bottom bars thinner on ultra-wide */
+    .top-bar {
+      padding: clamp(8px, 1vh, 12px) clamp(32px, 4vw, 56px);
+    }
+
+    .bottom-bar {
+      padding: clamp(8px, 1vh, 12px) clamp(32px, 4vw, 56px);
+    }
+  }
+
 
   /* ── LOCKED GROUP CARDS ── */
   .gs-card-locked {
