@@ -2384,9 +2384,8 @@ function predictGestures() {
         // Swipe detection using all hand landmarks for better motion tracking
         detectSwipe(landmarks);
         
-        // Button hover — use wrist/palm base (landmark 9) only for stable cursor
-        // This is more reliable than index fingertip (landmark 8) when pointing at corners
-        const _cursor = landmarks[9];
+        // Button hover — use index fingertip (landmark 8) for pointer finger tracking
+        const _cursor = landmarks[8];
         updateBtnHover(1 - _cursor.x, _cursor.y);
       } else {
         // No hand — reset swipe
@@ -2566,10 +2565,10 @@ hoverZones.forEach(z => {
 });
 
 function getHandNormalized(landmarks) {
-  // Use wrist/palm base (landmark 9) for stable tracking — not pointer finger
+  // Use index fingertip (landmark 8) for pointer finger tracking
   // x is mirrored in the webcam preview, so we flip: realX = 1 - lm.x
-  const wrist = landmarks[9];
-  return { x: 1 - wrist.x, y: wrist.y };
+  const pointer = landmarks[8];
+  return { x: 1 - pointer.x, y: pointer.y };
 }
 
 function updateHoverZones(landmarks) {
