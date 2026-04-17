@@ -234,7 +234,8 @@
     display: flex;
     align-items: center;
     gap: clamp(12px,1.8vw,24px);
-    flex-shrink: 0;
+    flex: 1;
+    justify-content: flex-end;
   }
 
   .session-stats {
@@ -1593,6 +1594,7 @@
       flex-wrap: nowrap;
       gap: clamp(8px,1.2vw,11px);
       flex: 1;
+      justify-content: flex-end;
       min-width: 0;
     }
 
@@ -2069,7 +2071,7 @@
     .top-right-section {
       gap: clamp(32px, 4.5vw, 70px);
       flex: 1;
-      justify-content: space-between;
+      justify-content: flex-end;
     }
 
     .session-stats {
