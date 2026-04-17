@@ -400,6 +400,8 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
+    max-width: 85vw;
+    max-height: 85vh;
   }
   @media (max-aspect-ratio: 3/4) {
     #mainVideo { object-fit: cover; }
@@ -869,7 +871,7 @@
 
   .session-progress {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
-    position: fixed; bottom: clamp(20px,3vh,40px); z-index: 50;
+    position: fixed; bottom: clamp(80px,10vh,140px); z-index: 50;
   }
   .progress-track {
     width: clamp(200px,30vw,500px); height: 6px;
