@@ -420,7 +420,7 @@
     height: 100%;
     object-fit: cover;
     filter: blur(28px) brightness(0.2) saturate(0.4);
-    transform: scale(1.12);
+    transform: scale(0.85);
     z-index: 0;
     pointer-events: none;
   }
@@ -869,9 +869,10 @@
 
   .session-progress {
     display: flex; flex-direction: column; align-items: center; gap: 6px;
+    position: fixed; bottom: clamp(20px,3vh,40px); z-index: 50;
   }
   .progress-track {
-    width: clamp(100px,15vw,200px); height: 2px;
+    width: clamp(200px,30vw,500px); height: 6px;
     background: var(--border);
     border-radius: 1px;
     overflow: hidden;
