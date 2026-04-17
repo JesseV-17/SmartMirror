@@ -739,6 +739,7 @@
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
     z-index: 10 !important;
+    margin: 0 !important;
   }
 
   /* ── RIGHT CONTROL PANEL (vertical stack) ── */
@@ -753,6 +754,7 @@
     justify-content: center;
     gap: clamp(16px,2.5vh,28px);
     z-index: 24;
+    height: auto;
   }
 
   .right-control-panel #navArrowNext {
@@ -761,6 +763,34 @@
     right: 50% !important;
     transform: translate(50%, -50%) !important;
     z-index: 10 !important;
+    margin: 0 !important;
+  }
+
+  .right-control-panel .end-btn {
+    position: absolute !important;
+    bottom: clamp(20px, 8vh, 40px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 20 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    width: clamp(38px,5vw,52px);
+    height: clamp(38px,5vw,52px);
+    border: 1.5px solid rgba(255,71,87,0.8);
+    background: rgba(255,71,87,0.12);
+    border-radius: 50%;
+    font-size: clamp(8px,1vw,11px);
+    font-family: var(--font-display);
+    letter-spacing: 0.1em;
+    color: #ff6b78;
+    text-transform: uppercase;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: all 0.2s;
+    cursor: pointer;
+    line-height: 1;
   }
 
   .play-pause-btn {
@@ -768,8 +798,12 @@
     background: transparent; border: none; cursor: pointer;
     padding: 0;
     flex-shrink: 0;
-    margin-bottom: clamp(40px,6vh,80px);
+    position: absolute !important;
+    top: clamp(20px, 8vh, 40px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     z-index: 20 !important;
+    margin: 0 !important;
   }
   .pp-circle {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -800,8 +834,12 @@
     background: transparent; border: none; cursor: pointer;
     padding: 0;
     flex-shrink: 0;
-    margin-top: clamp(40px,6vh,80px);
+    position: absolute !important;
+    bottom: clamp(20px, 8vh, 40px) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
     z-index: 20 !important;
+    margin: 0 !important;
   }
   .speed-display {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -873,30 +911,7 @@
     box-shadow: 0 0 16px rgba(255,71,87,0.3);
   }
 
-  /* End button in vertical control panel */
-  .right-control-panel .end-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    width: clamp(38px,5vw,52px);
-    height: clamp(38px,5vw,52px);
-    border: 1.5px solid rgba(255,71,87,0.8);
-    background: rgba(255,71,87,0.12);
-    border-radius: 50%;
-    font-size: clamp(8px,1vw,11px);
-    font-family: var(--font-display);
-    letter-spacing: 0.1em;
-    color: #ff6b78;
-    text-transform: uppercase;
-    font-weight: 600;
-    flex-shrink: 0;
-    transition: all 0.2s;
-    cursor: pointer;
-    line-height: 1;
-    margin-top: clamp(40px,6vh,80px);
-    z-index: 20 !important;
-  }
+  /* End button in vertical control panel - MERGED with positioning above */
   .right-control-panel .end-btn:hover {
     background: rgba(255,71,87,0.25);
     border-color: var(--red);
