@@ -213,8 +213,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: clamp(20px,3vw,40px);
     padding: clamp(10px,2vh,20px) clamp(14px,2vw,28px) clamp(8px,1.5vh,16px);
     background: linear-gradient(to bottom, rgba(5,5,8,0.85) 0%, transparent 100%);
+    flex-wrap: wrap;
   }
 
   .top-logo {
@@ -250,6 +252,97 @@
     line-height: 1.1;
   }
   .stat-value.accent { color: var(--cyan); }
+
+  /* ── TOP BAR EXERCISE SECTION ── */
+  .top-bar-exercise-section {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px,2vw,28px);
+    flex-basis: 100%;
+    padding: clamp(8px,1vh,12px) 0;
+    order: 3;
+  }
+
+  .top-exercise-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .top-exercise-name {
+    font-family: var(--font-display);
+    font-size: clamp(16px,2vw,24px);
+    letter-spacing: 0.05em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .top-exercise-sub {
+    font-family: var(--font-mono);
+    font-size: clamp(9px,1vw,11px);
+    letter-spacing: 0.1em;
+    color: #ffffff;
+  }
+
+  /* ── TOP REP COUNTER MINI ── */
+  .top-rep-counter {
+    display: flex;
+    align-items: center;
+  }
+
+  .top-rep-ring {
+    position: relative;
+    width: clamp(48px,6vw,64px);
+    height: clamp(48px,6vw,64px);
+  }
+
+  .top-rep-ring svg {
+    transform: rotate(-90deg);
+    width: clamp(48px,6vw,64px);
+    height: clamp(48px,6vw,64px);
+  }
+
+  .top-rep-ring svg circle.track {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 2;
+  }
+
+  .top-rep-ring svg circle.fill {
+    fill: none;
+    stroke: var(--cyan);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-dasharray: 220;
+    stroke-dashoffset: 220;
+    transition: stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1);
+    filter: drop-shadow(0 0 4px var(--cyan-glow));
+  }
+
+  .top-rep-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .top-rep-number {
+    font-family: var(--font-display);
+    font-size: clamp(14px,1.8vw,20px);
+    letter-spacing: 0.02em;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .top-rep-total {
+    font-family: var(--font-mono);
+    font-size: clamp(8px,0.9vw,10px);
+    letter-spacing: 0.1em;
+    color: #ffffff;
+  }
 
   /* ── MAIN CONTENT ── */
   .main-content {
@@ -1443,6 +1536,55 @@
      Full-body mirror layout
   ══════════════════════════════ */
   @media (max-aspect-ratio: 3/4) {
+    /* Top bar with exercise section */
+    .top-bar {
+      flex-wrap: wrap;
+      padding: clamp(10px,1.5vh,14px) clamp(12px,2vw,20px);
+      gap: clamp(12px,1.5vw,20px);
+    }
+
+    .session-stats {
+      gap: clamp(16px,2vw,24px);
+      order: 2;
+    }
+
+    .top-bar-exercise-section {
+      flex-basis: 100%;
+      gap: clamp(12px,1.5vw,16px) !important;
+      order: 3;
+      padding: clamp(6px,0.8vh,10px) 0 !important;
+    }
+
+    .top-exercise-info {
+      gap: 1px;
+    }
+
+    .top-exercise-name {
+      font-size: clamp(14px,3vw,18px);
+    }
+
+    .top-exercise-sub {
+      font-size: clamp(8px,0.9vw,10px);
+    }
+
+    .top-rep-ring {
+      width: clamp(40px,6vw,48px);
+      height: clamp(40px,6vw,48px);
+    }
+
+    .top-rep-ring svg {
+      width: clamp(40px,6vw,48px);
+      height: clamp(40px,6vw,48px);
+    }
+
+    .top-rep-number {
+      font-size: clamp(12px,1.5vw,16px);
+    }
+
+    .top-rep-total {
+      font-size: clamp(7px,0.8vw,9px);
+    }
+
     /* Side panel moves to bottom overlay strip */
     .side-panel {
       top: auto !important;
@@ -1458,6 +1600,7 @@
       background: rgba(5,5,8,0.8);
       backdrop-filter: blur(12px);
       border-top: 1px solid rgba(255,255,255,0.08);
+      display: none;
     }
     .side-panel .panel-card {
       flex: 1;
@@ -2009,6 +2152,29 @@
         <div class="stat-value" id="exerciseIndex">1 / 2</div>
       </div>
     </div>
+    
+    <!-- Current Exercise and Rep Counter Section -->
+    <div class="top-bar-exercise-section">
+      <!-- Exercise Info -->
+      <div class="top-exercise-info">
+        <div class="top-exercise-name" id="topExerciseName">SQUAT</div>
+        <div class="top-exercise-sub" id="topExerciseSub">Lower Body · Compound</div>
+      </div>
+      
+      <!-- Rep Counter Mini -->
+      <div class="top-rep-counter">
+        <div class="top-rep-ring">
+          <svg viewBox="0 0 80 80">
+            <circle class="track" cx="40" cy="40" r="35"/>
+            <circle class="fill" id="topRepArc" cx="40" cy="40" r="35"/>
+          </svg>
+          <div class="top-rep-center">
+            <div class="top-rep-number" id="topRepCount">0</div>
+            <div class="top-rep-total">/ 10</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MAIN CONTENT: video fills entire screen -->
@@ -2314,6 +2480,8 @@ function loadExercise(index) {
   const ex = exercises[index];
   document.getElementById('exerciseName').textContent = ex.name;
   document.getElementById('exerciseSub').textContent = ex.sub;
+  document.getElementById('topExerciseName').textContent = ex.name;
+  document.getElementById('topExerciseSub').textContent = ex.sub;
   document.getElementById('exerciseIndex').textContent = `${index + 1} / ${exercises.length}`;
   document.getElementById('progressLabel').textContent = `EXERCISE ${index + 1} OF ${exercises.length}`;
   document.getElementById('progressFill').style.width = `${((index + 1) / exercises.length) * 100}%`;
@@ -2471,9 +2639,11 @@ function resetReps() {
 
 function updateRepDisplay() {
   document.getElementById('repCount').textContent = state.reps;
+  document.getElementById('topRepCount').textContent = state.reps;
   const circumference = 220;
   const offset = circumference - (state.reps / MAX_REPS) * circumference;
   document.getElementById('repArc').style.strokeDashoffset = offset;
+  document.getElementById('topRepArc').style.strokeDashoffset = offset;
 }
 
 function updateSetsDoneDisplay() {
