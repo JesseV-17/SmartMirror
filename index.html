@@ -2358,14 +2358,15 @@
 
         <!-- Navigation arrow — center of vertical stack -->
         <div id="navArrowPrev" onclick="simulateGesture('prev')"
-          style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+          style="position:relative;width:clamp(38px,5vw,52px);height:clamp(38px,5vw,52px);border-radius:50%;
                  display:flex;align-items:center;justify-content:center;
                  cursor:pointer;z-index:25;
                  background:rgba(5,5,8,0.7);
                  border:1.5px solid rgba(0,229,200,0.5);
                  backdrop-filter:blur(8px);
-                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-          <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);
+                 flex-shrink:0;">
+          <div style="font-size:clamp(16px,2vw,22px);color:var(--cyan);
                       animation:arrow-pulse-l 2s ease-in-out infinite;
                       text-shadow:0 0 12px var(--cyan-glow);">&#8592;</div>
           <div id="prevExLabel" style="display:none;"></div>
@@ -2382,14 +2383,15 @@
       <div class="right-control-panel">
         <!-- Navigation arrow — center of vertical stack -->
         <div id="navArrowNext" onclick="simulateGesture('next')"
-          style="position:relative;width:clamp(40px,5vw,56px);height:clamp(40px,5vw,56px);border-radius:50%;
+          style="position:relative;width:clamp(38px,5vw,52px);height:clamp(38px,5vw,52px);border-radius:50%;
                  display:flex;align-items:center;justify-content:center;
                  cursor:pointer;z-index:25;
                  background:rgba(5,5,8,0.7);
                  border:1.5px solid rgba(0,229,200,0.5);
                  backdrop-filter:blur(8px);
-                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);">
-          <div style="font-size:clamp(18px,2.5vw,26px);color:var(--cyan);
+                 transition:all 0.2s;box-shadow:0 0 16px rgba(0,229,200,0.2);
+                 flex-shrink:0;">
+          <div style="font-size:clamp(16px,2vw,22px);color:var(--cyan);
                       animation:arrow-pulse-r 2s ease-in-out infinite;
                       text-shadow:0 0 12px var(--cyan-glow);">&#8594;</div>
           <div id="nextExLabel" style="display:none;"></div>
