@@ -213,13 +213,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: clamp(10px,2vh,20px) clamp(14px,2vw,28px) clamp(8px,1.5vh,16px);
+    padding: clamp(8px,1.5vh,16px) clamp(14px,2vw,28px);
     background: linear-gradient(to bottom, rgba(5,5,8,0.85) 0%, transparent 100%);
+    flex-wrap: nowrap;
+    gap: clamp(12px,1.5vw,20px);
+    min-height: clamp(50px, 8vh, 80px);
   }
 
   .top-logo {
     font-family: var(--font-display);
-    font-size: clamp(18px,2.5vw,28px);
+    font-size: clamp(16px,2vw,24px);
     letter-spacing: 0.1em;
     color: var(--white);
     flex-shrink: 0;
@@ -230,35 +233,36 @@
   .top-right-section {
     display: flex;
     align-items: center;
-    gap: clamp(16px,2.5vw,32px);
+    gap: clamp(12px,1.8vw,24px);
     flex-shrink: 0;
   }
 
   .session-stats {
     display: flex;
-    gap: clamp(20px,2.5vw,32px);
+    gap: clamp(16px,2vw,24px);
     align-items: center;
     flex-shrink: 0;
   }
   .stat-block {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    gap: 2px;
+    align-items: center;
+    gap: 1px;
+    flex-shrink: 0;
   }
   .stat-label {
     font-family: var(--font-mono);
-    font-size: clamp(7px,0.8vw,9px);
-    letter-spacing: 0.3em;
+    font-size: clamp(6px,0.75vw,8px);
+    letter-spacing: 0.25em;
     color: #ffffff;
     text-transform: uppercase;
   }
   .stat-value {
     font-family: var(--font-display);
-    font-size: clamp(12px,1.4vw,16px);
+    font-size: clamp(11px,1.3vw,15px);
     letter-spacing: 0.05em;
     color: var(--white);
-    line-height: 1.1;
+    line-height: 1;
   }
   .stat-value.accent { color: var(--cyan); }
 
@@ -266,9 +270,9 @@
   .top-bar-exercise-section {
     display: flex;
     align-items: center;
-    gap: clamp(10px,1.5vw,16px);
+    gap: clamp(10px,1.2vw,14px);
     flex-shrink: 0;
-    padding: clamp(8px,1vh,12px) clamp(12px,1.5vw,16px);
+    padding: clamp(6px,0.8vh,10px) clamp(10px,1.2vw,14px);
     background: rgba(0,229,200,0.08);
     border: 1px solid rgba(0,229,200,0.3);
     border-radius: 3px;
@@ -278,49 +282,48 @@
   .top-exercise-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 1px;
     min-width: 0;
+    flex-shrink: 0;
   }
 
   .top-exercise-name {
     font-family: var(--font-display);
-    font-size: clamp(12px,1.5vw,16px);
+    font-size: clamp(11px,1.3vw,14px);
     letter-spacing: 0.08em;
     color: var(--cyan);
     line-height: 1;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .top-exercise-sub {
     font-family: var(--font-mono);
-    font-size: clamp(8px,0.85vw,10px);
-    letter-spacing: 0.1em;
+    font-size: clamp(7px,0.8vw,9px);
+    letter-spacing: 0.08em;
     color: #ffffff;
     opacity: 0.8;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   /* ── TOP REP COUNTER MINI ── */
   .top-rep-counter {
     display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 2px;
     flex-shrink: 0;
   }
 
   .top-rep-ring {
     position: relative;
-    width: clamp(42px,5.5vw,56px);
-    height: clamp(42px,5.5vw,56px);
+    width: clamp(40px,5vw,50px);
+    height: clamp(40px,5vw,50px);
   }
 
   .top-rep-ring svg {
     transform: rotate(-90deg);
-    width: clamp(42px,5.5vw,56px);
-    height: clamp(42px,5.5vw,56px);
+    width: clamp(40px,5vw,50px);
+    height: clamp(40px,5vw,50px);
   }
 
   .top-rep-ring svg circle.track {
@@ -352,7 +355,7 @@
 
   .top-rep-number {
     font-family: var(--font-display);
-    font-size: clamp(11px,1.4vw,14px);
+    font-size: clamp(10px,1.2vw,13px);
     letter-spacing: 0.05em;
     color: var(--cyan);
     line-height: 1;
@@ -361,10 +364,20 @@
 
   .top-rep-total {
     font-family: var(--font-mono);
-    font-size: clamp(7px,0.8vw,8px);
+    font-size: clamp(6px,0.75vw,7px);
     letter-spacing: 0.1em;
     color: #ffffff;
     opacity: 0.7;
+  }
+
+  .top-rep-label {
+    font-family: var(--font-mono);
+    font-size: clamp(6px,0.7vw,7px);
+    letter-spacing: 0.15em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    font-weight: 600;
+    opacity: 0.9;
   }
 
   /* ── MAIN CONTENT ── */
@@ -1561,68 +1574,73 @@
   @media (max-aspect-ratio: 3/4) {
     /* Top bar adjusts for portrait */
     .top-bar {
-      flex-wrap: wrap;
-      align-items: flex-start;
-      gap: clamp(8px,1vh,12px);
-      padding: clamp(8px,1.2vh,12px) clamp(10px,1.5vw,16px);
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: clamp(6px,0.9vw,10px);
+      padding: clamp(6px,0.9vh,10px) clamp(8px,1.2vw,12px);
+      min-height: clamp(45px, 7vh, 65px);
     }
 
     .top-logo {
-      font-size: clamp(16px,2vw,20px);
+      font-size: clamp(14px,1.8vw,18px);
+      flex-shrink: 0;
     }
 
-    /* Right section stacks on small screens */
+    /* Right section stays horizontal */
     .top-right-section {
-      flex-wrap: wrap;
-      gap: clamp(10px,1.5vw,14px);
-      order: 3;
-      flex-basis: 100%;
-    }
-
-    .session-stats {
-      gap: clamp(14px,1.8vw,18px);
-    }
-
-    .stat-label {
-      font-size: clamp(6px,0.7vw,8px);
-    }
-
-    .stat-value {
-      font-size: clamp(11px,1.2vw,13px);
-    }
-
-    .top-bar-exercise-section {
-      gap: clamp(8px,1.2vw,10px);
-      padding: clamp(6px,0.8vh,8px) clamp(10px,1.2vw,12px);
-      flex-basis: auto;
-      flex-shrink: 1;
+      flex-wrap: nowrap;
+      gap: clamp(8px,1.2vw,11px);
+      flex: 1;
       min-width: 0;
     }
 
+    .session-stats {
+      gap: clamp(12px,1.5vw,14px);
+      flex-shrink: 0;
+    }
+
+    .stat-label {
+      font-size: clamp(5px,0.6vw,6px);
+    }
+
+    .stat-value {
+      font-size: clamp(10px,1.1vw,12px);
+    }
+
+    .top-bar-exercise-section {
+      gap: clamp(6px,0.9vw,8px);
+      padding: clamp(4px,0.6vh,6px) clamp(8px,1vw,10px);
+      flex-shrink: 0;
+    }
+
     .top-exercise-name {
-      font-size: clamp(11px,1.3vw,14px);
-    }
-
-    .top-exercise-sub {
-      font-size: clamp(7px,0.8vw,9px);
-    }
-
-    .top-rep-ring {
-      width: clamp(36px,5vw,42px);
-      height: clamp(36px,5vw,42px);
-    }
-
-    .top-rep-ring svg {
-      width: clamp(36px,5vw,42px);
-      height: clamp(36px,5vw,42px);
-    }
-
-    .top-rep-number {
       font-size: clamp(10px,1.2vw,12px);
     }
 
-    .top-rep-total {
+    .top-exercise-sub {
       font-size: clamp(6px,0.7vw,7px);
+    }
+
+    .top-rep-ring {
+      width: clamp(36px,4.5vw,40px);
+      height: clamp(36px,4.5vw,40px);
+    }
+
+    .top-rep-ring svg {
+      width: clamp(36px,4.5vw,40px);
+      height: clamp(36px,4.5vw,40px);
+    }
+
+    .top-rep-number {
+      font-size: clamp(9px,1vw,11px);
+    }
+
+    .top-rep-total {
+      font-size: clamp(5px,0.6vw,6px);
+    }
+
+    .top-rep-label {
+      font-size: clamp(5px,0.6vw,6px);
     }
 
     /* Side panel moved to bottom and hidden in favor of top-bar */
@@ -1784,6 +1802,10 @@
 
     .top-rep-number {
       font-size: clamp(13px, 1.6vw, 18px);
+    }
+
+    .top-rep-label {
+      font-size: clamp(8px, 1vw, 10px);
     }
 
     /* Side panel repositioned for ultra-wide */
@@ -2245,6 +2267,7 @@
               <div class="top-rep-total">/ 10</div>
             </div>
           </div>
+          <div class="top-rep-label">REPS COMPLETED</div>
         </div>
       </div>
     </div>
