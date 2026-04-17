@@ -733,6 +733,13 @@
     z-index: 24;
   }
 
+  .left-control-panel #navArrowPrev {
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
   /* ── RIGHT CONTROL PANEL (vertical stack) ── */
   .right-control-panel {
     position: absolute;
@@ -745,6 +752,13 @@
     justify-content: center;
     gap: clamp(16px,2.5vh,28px);
     z-index: 24;
+  }
+
+  .right-control-panel #navArrowNext {
+    position: absolute !important;
+    top: 50% !important;
+    right: 50% !important;
+    transform: translate(50%, -50%) !important;
   }
 
   .play-pause-btn {
