@@ -213,10 +213,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: clamp(20px,3vw,40px);
     padding: clamp(10px,2vh,20px) clamp(14px,2vw,28px) clamp(8px,1.5vh,16px);
     background: linear-gradient(to bottom, rgba(5,5,8,0.85) 0%, transparent 100%);
-    flex-wrap: wrap;
   }
 
   .top-logo {
@@ -224,99 +222,122 @@
     font-size: clamp(18px,2.5vw,28px);
     letter-spacing: 0.1em;
     color: var(--white);
+    flex-shrink: 0;
   }
   .top-logo span { color: var(--cyan); }
 
+  /* ── TOP RIGHT SECTION ── */
+  .top-right-section {
+    display: flex;
+    align-items: center;
+    gap: clamp(16px,2.5vw,32px);
+    flex-shrink: 0;
+  }
+
   .session-stats {
     display: flex;
-    gap: 28px;
+    gap: clamp(20px,2.5vw,32px);
     align-items: center;
+    flex-shrink: 0;
   }
   .stat-block {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    gap: 2px;
   }
   .stat-label {
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: clamp(7px,0.8vw,9px);
     letter-spacing: 0.3em;
     color: #ffffff;
     text-transform: uppercase;
   }
   .stat-value {
     font-family: var(--font-display);
-    font-size: clamp(13px,1.6vw,18px);
+    font-size: clamp(12px,1.4vw,16px);
     letter-spacing: 0.05em;
     color: var(--white);
     line-height: 1.1;
   }
   .stat-value.accent { color: var(--cyan); }
 
-  /* ── TOP BAR EXERCISE SECTION ── */
+  /* ── TOP BAR EXERCISE SECTION — Compact and distinct ── */
   .top-bar-exercise-section {
     display: flex;
     align-items: center;
-    gap: clamp(16px,2vw,28px);
-    flex-basis: 100%;
-    padding: clamp(8px,1vh,12px) 0;
-    order: 3;
+    gap: clamp(10px,1.5vw,16px);
+    flex-shrink: 0;
+    padding: clamp(8px,1vh,12px) clamp(12px,1.5vw,16px);
+    background: rgba(0,229,200,0.08);
+    border: 1px solid rgba(0,229,200,0.3);
+    border-radius: 3px;
+    backdrop-filter: blur(6px);
   }
 
   .top-exercise-info {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    min-width: 0;
   }
 
   .top-exercise-name {
     font-family: var(--font-display);
-    font-size: clamp(16px,2vw,24px);
-    letter-spacing: 0.05em;
-    color: var(--white);
+    font-size: clamp(12px,1.5vw,16px);
+    letter-spacing: 0.08em;
+    color: var(--cyan);
     line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .top-exercise-sub {
     font-family: var(--font-mono);
-    font-size: clamp(9px,1vw,11px);
+    font-size: clamp(8px,0.85vw,10px);
     letter-spacing: 0.1em;
     color: #ffffff;
+    opacity: 0.8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* ── TOP REP COUNTER MINI ── */
   .top-rep-counter {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
   }
 
   .top-rep-ring {
     position: relative;
-    width: clamp(48px,6vw,64px);
-    height: clamp(48px,6vw,64px);
+    width: clamp(42px,5.5vw,56px);
+    height: clamp(42px,5.5vw,56px);
   }
 
   .top-rep-ring svg {
     transform: rotate(-90deg);
-    width: clamp(48px,6vw,64px);
-    height: clamp(48px,6vw,64px);
+    width: clamp(42px,5.5vw,56px);
+    height: clamp(42px,5.5vw,56px);
   }
 
   .top-rep-ring svg circle.track {
     fill: none;
-    stroke: var(--border);
-    stroke-width: 2;
+    stroke: rgba(0,229,200,0.2);
+    stroke-width: 1.5;
   }
 
   .top-rep-ring svg circle.fill {
     fill: none;
     stroke: var(--cyan);
-    stroke-width: 2;
+    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-dasharray: 220;
     stroke-dashoffset: 220;
     transition: stroke-dashoffset 0.5s cubic-bezier(0.4,0,0.2,1);
-    filter: drop-shadow(0 0 4px var(--cyan-glow));
+    filter: drop-shadow(0 0 3px rgba(0,229,200,0.6));
   }
 
   .top-rep-center {
@@ -331,17 +352,19 @@
 
   .top-rep-number {
     font-family: var(--font-display);
-    font-size: clamp(14px,1.8vw,20px);
-    letter-spacing: 0.02em;
-    color: var(--white);
+    font-size: clamp(11px,1.4vw,14px);
+    letter-spacing: 0.05em;
+    color: var(--cyan);
     line-height: 1;
+    font-weight: 700;
   }
 
   .top-rep-total {
     font-family: var(--font-mono);
-    font-size: clamp(8px,0.9vw,10px);
+    font-size: clamp(7px,0.8vw,8px);
     letter-spacing: 0.1em;
     color: #ffffff;
+    opacity: 0.7;
   }
 
   /* ── MAIN CONTENT ── */
@@ -1536,56 +1559,73 @@
      Full-body mirror layout
   ══════════════════════════════ */
   @media (max-aspect-ratio: 3/4) {
-    /* Top bar with exercise section */
+    /* Top bar adjusts for portrait */
     .top-bar {
       flex-wrap: wrap;
-      padding: clamp(10px,1.5vh,14px) clamp(12px,2vw,20px);
-      gap: clamp(12px,1.5vw,20px);
+      align-items: flex-start;
+      gap: clamp(8px,1vh,12px);
+      padding: clamp(8px,1.2vh,12px) clamp(10px,1.5vw,16px);
+    }
+
+    .top-logo {
+      font-size: clamp(16px,2vw,20px);
+    }
+
+    /* Right section stacks on small screens */
+    .top-right-section {
+      flex-wrap: wrap;
+      gap: clamp(10px,1.5vw,14px);
+      order: 3;
+      flex-basis: 100%;
     }
 
     .session-stats {
-      gap: clamp(16px,2vw,24px);
-      order: 2;
+      gap: clamp(14px,1.8vw,18px);
+    }
+
+    .stat-label {
+      font-size: clamp(6px,0.7vw,8px);
+    }
+
+    .stat-value {
+      font-size: clamp(11px,1.2vw,13px);
     }
 
     .top-bar-exercise-section {
-      flex-basis: 100%;
-      gap: clamp(12px,1.5vw,16px) !important;
-      order: 3;
-      padding: clamp(6px,0.8vh,10px) 0 !important;
-    }
-
-    .top-exercise-info {
-      gap: 1px;
+      gap: clamp(8px,1.2vw,10px);
+      padding: clamp(6px,0.8vh,8px) clamp(10px,1.2vw,12px);
+      flex-basis: auto;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     .top-exercise-name {
-      font-size: clamp(14px,3vw,18px);
+      font-size: clamp(11px,1.3vw,14px);
     }
 
     .top-exercise-sub {
-      font-size: clamp(8px,0.9vw,10px);
-    }
-
-    .top-rep-ring {
-      width: clamp(40px,6vw,48px);
-      height: clamp(40px,6vw,48px);
-    }
-
-    .top-rep-ring svg {
-      width: clamp(40px,6vw,48px);
-      height: clamp(40px,6vw,48px);
-    }
-
-    .top-rep-number {
-      font-size: clamp(12px,1.5vw,16px);
-    }
-
-    .top-rep-total {
       font-size: clamp(7px,0.8vw,9px);
     }
 
-    /* Side panel moves to bottom overlay strip */
+    .top-rep-ring {
+      width: clamp(36px,5vw,42px);
+      height: clamp(36px,5vw,42px);
+    }
+
+    .top-rep-ring svg {
+      width: clamp(36px,5vw,42px);
+      height: clamp(36px,5vw,42px);
+    }
+
+    .top-rep-number {
+      font-size: clamp(10px,1.2vw,12px);
+    }
+
+    .top-rep-total {
+      font-size: clamp(6px,0.7vw,7px);
+    }
+
+    /* Side panel moved to bottom and hidden in favor of top-bar */
     .side-panel {
       top: auto !important;
       bottom: 100px;
@@ -1711,8 +1751,39 @@
       padding: clamp(12px, 1.5vh, 16px) clamp(24px, 3vw, 40px);
     }
 
+    .top-right-section {
+      gap: clamp(20px, 3vw, 40px);
+    }
+
     .session-stats {
       gap: clamp(24px, 3vw, 48px);
+    }
+
+    .top-bar-exercise-section {
+      gap: clamp(14px, 2vw, 20px);
+      padding: clamp(10px, 1.2vh, 14px) clamp(16px, 2vw, 24px);
+    }
+
+    .top-exercise-name {
+      font-size: clamp(14px, 1.8vw, 20px);
+    }
+
+    .top-exercise-sub {
+      font-size: clamp(10px, 1.2vw, 13px);
+    }
+
+    .top-rep-ring {
+      width: clamp(50px, 6.5vw, 68px);
+      height: clamp(50px, 6.5vw, 68px);
+    }
+
+    .top-rep-ring svg {
+      width: clamp(50px, 6.5vw, 68px);
+      height: clamp(50px, 6.5vw, 68px);
+    }
+
+    .top-rep-number {
+      font-size: clamp(13px, 1.6vw, 18px);
     }
 
     /* Side panel repositioned for ultra-wide */
@@ -2138,39 +2209,41 @@
   <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-logo">C<span>O</span>RE</div>
-    <div class="session-stats">
-      <div class="stat-block">
-        <div class="stat-label">Active Time</div>
-        <div class="stat-value accent" id="activeTime">00:00</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-label">Sets Done</div>
-        <div class="stat-value" id="setsDone">0</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-label">Exercise</div>
-        <div class="stat-value" id="exerciseIndex">1 / 2</div>
-      </div>
-    </div>
-    
-    <!-- Current Exercise and Rep Counter Section -->
-    <div class="top-bar-exercise-section">
-      <!-- Exercise Info -->
-      <div class="top-exercise-info">
-        <div class="top-exercise-name" id="topExerciseName">SQUAT</div>
-        <div class="top-exercise-sub" id="topExerciseSub">Lower Body · Compound</div>
+    <div class="top-right-section">
+      <div class="session-stats">
+        <div class="stat-block">
+          <div class="stat-label">Active Time</div>
+          <div class="stat-value accent" id="activeTime">00:00</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-label">Sets Done</div>
+          <div class="stat-value" id="setsDone">0</div>
+        </div>
+        <div class="stat-block">
+          <div class="stat-label">Exercise</div>
+          <div class="stat-value" id="exerciseIndex">1 / 2</div>
+        </div>
       </div>
       
-      <!-- Rep Counter Mini -->
-      <div class="top-rep-counter">
-        <div class="top-rep-ring">
-          <svg viewBox="0 0 80 80">
-            <circle class="track" cx="40" cy="40" r="35"/>
-            <circle class="fill" id="topRepArc" cx="40" cy="40" r="35"/>
-          </svg>
-          <div class="top-rep-center">
-            <div class="top-rep-number" id="topRepCount">0</div>
-            <div class="top-rep-total">/ 10</div>
+      <!-- Current Exercise and Rep Counter Section -->
+      <div class="top-bar-exercise-section">
+        <!-- Exercise Info -->
+        <div class="top-exercise-info">
+          <div class="top-exercise-name" id="topExerciseName">SQUAT</div>
+          <div class="top-exercise-sub" id="topExerciseSub">Lower Body · Compound</div>
+        </div>
+        
+        <!-- Rep Counter Mini -->
+        <div class="top-rep-counter">
+          <div class="top-rep-ring">
+            <svg viewBox="0 0 80 80">
+              <circle class="track" cx="40" cy="40" r="35"/>
+              <circle class="fill" id="topRepArc" cx="40" cy="40" r="35"/>
+            </svg>
+            <div class="top-rep-center">
+              <div class="top-rep-number" id="topRepCount">0</div>
+              <div class="top-rep-total">/ 10</div>
+            </div>
           </div>
         </div>
       </div>
