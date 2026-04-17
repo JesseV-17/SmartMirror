@@ -738,6 +738,7 @@
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) !important;
+    z-index: 10 !important;
   }
 
   /* ── RIGHT CONTROL PANEL (vertical stack) ── */
@@ -759,6 +760,7 @@
     top: 50% !important;
     right: 50% !important;
     transform: translate(50%, -50%) !important;
+    z-index: 10 !important;
   }
 
   .play-pause-btn {
@@ -766,6 +768,8 @@
     background: transparent; border: none; cursor: pointer;
     padding: 0;
     flex-shrink: 0;
+    margin-bottom: clamp(40px,6vh,80px);
+    z-index: 20 !important;
   }
   .pp-circle {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -796,6 +800,8 @@
     background: transparent; border: none; cursor: pointer;
     padding: 0;
     flex-shrink: 0;
+    margin-top: clamp(40px,6vh,80px);
+    z-index: 20 !important;
   }
   .speed-display {
     width: clamp(38px,5vw,52px); height: clamp(38px,5vw,52px);
@@ -888,6 +894,8 @@
     transition: all 0.2s;
     cursor: pointer;
     line-height: 1;
+    margin-top: clamp(40px,6vh,80px);
+    z-index: 20 !important;
   }
   .right-control-panel .end-btn:hover {
     background: rgba(255,71,87,0.25);
